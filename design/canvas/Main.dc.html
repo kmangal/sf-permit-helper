@@ -25,6 +25,7 @@
     .row { cursor: pointer; transition: background .15s; }
     .row:hover { background: #eef2f8 !important; }
     .ledger { transition: background .15s; }
+    .fld:hover { background: #eef2f8 !important; }
     .composer { transition: box-shadow .2s; box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06); }
     .composer:focus-within { box-shadow: 0 1px 2px rgba(16,24,40,.06), 0 12px 32px rgba(18,48,94,.14); }
     .ask:focus-within { border-color: #1e4b9a !important; }
@@ -162,20 +163,32 @@
           <div class="a-rise" style="font-size: 14px; font-weight: 600; color: #475467; letter-spacing: .02em; margin-bottom: 14px;">{{ eventTitle }}</div>
           <div class="a-rise" style="font-size: 44px; font-weight: 700; letter-spacing: -1.2px; line-height: 1.08; margin-bottom: 16px; animation-delay: 60ms;">{{ summaryHead }}</div>
           <div class="a-rise" style="font-size: 17px; color: #475467; line-height: 1.5; max-width: 620px; margin-bottom: 40px; animation-delay: 120ms;">{{ summarySub }}</div>
-          <div class="a-rule" style="height: 2px; background: #12305e; margin-bottom: 6px; animation-delay: 200ms;"></div>
+          <!-- Location check -->
+          <div class="a-rise" style="display: grid; grid-template-columns: 1fr 200px; gap: 32px; padding: 20px 24px; border: 1px solid #dfe3ea; border-radius: 12px; background: #ffffff; margin-bottom: 14px; animation-delay: 200ms;">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <div style="font-size: 16px; font-weight: 600;">{{ siteCheck.title }}</div>
+              <div style="font-size: 15px; color: #344054; line-height: 1.5;">{{ siteCheck.text }}</div>
+              <div style="font-size: 13px; color: #98a2b3; margin-top: 2px;">{{ siteCheck.source }}</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center; gap: 4px; border-left: 1px solid #e4e7ec; padding-left: 24px;">
+              <div style="font-size: 13px; color: #667085;">Fees for this event</div>
+              <div style="font-size: 24px; font-weight: 700; letter-spacing: -0.4px;">{{ feeFixed }}</div>
+              <div style="font-size: 13px; color: #667085; line-height: 1.4;">{{ feeVariable }}</div>
+            </div>
+          </div>
 
           <sc-for list="{{ summaryRows }}" as="r" hint-placeholder-count="4">
-            <div class="a-rise" style="display: grid; grid-template-columns: 1fr 200px; gap: 32px; padding: 26px 0; border-bottom: 1px solid #e4e7ec; animation-delay: {{ r.delay }};">
+            <div class="a-rise" style="display: grid; grid-template-columns: 1fr 200px; gap: 32px; padding: 22px 24px; border: 1px solid #dfe3ea; border-radius: 12px; background: #ffffff; margin-bottom: 10px; animation-delay: {{ r.delay }};">
               <div style="display: flex; flex-direction: column; gap: 6px;">
                 <div style="display: flex; align-items: baseline; gap: 12px;">
-                  <div style="font-size: 20px; font-weight: 600; letter-spacing: -0.2px;">{{ r.name }}</div>
+                  <div style="font-size: 19px; font-weight: 600; letter-spacing: -0.2px;">{{ r.name }}</div>
                   <div style="font-size: 14px; color: #667085;">{{ r.agency }}</div>
                 </div>
-                <div style="font-size: 15.5px; color: #344054; line-height: 1.5; max-width: 560px;">{{ r.purpose }}</div>
-                <div style="display: flex; gap: 22px; margin-top: 4px; font-size: 14px; color: #667085;">
-                  <span style="color: {{ r.dueFg }}; font-weight: 500;">{{ r.due }}</span>
-                  <span>{{ r.fee }}</span>
-                  <span>{{ r.leadLabel }}</span>
+                <div style="font-size: 15px; color: #344054; line-height: 1.5; max-width: 560px;">{{ r.purpose }}</div>
+                <div style="display: grid; grid-template-columns: 150px 1fr; gap: 4px 16px; margin-top: 8px; font-size: 14px;">
+                  <div style="color: #667085;">Due</div><div style="color: {{ r.dueFg }}; font-weight: 500;">{{ r.due }}</div>
+                  <div style="color: #667085;">Fee</div><div style="color: #101828; font-weight: 500;">{{ r.fee }}</div>
+                  <div style="color: #667085;">Limits</div><div style="color: #344054; line-height: 1.45;">{{ r.limits }}</div>
                 </div>
               </div>
               <div style="display: flex; flex-direction: column; gap: 8px; align-items: stretch; justify-content: center;">
@@ -185,7 +198,7 @@
             </div>
           </sc-for>
 
-          <div class="a-rise" style="display: flex; justify-content: space-between; align-items: center; padding: 28px 0 0; animation-delay: {{ summaryTailDelay }};">
+          <div class="a-rise" style="display: flex; justify-content: space-between; align-items: center; padding: 22px 0 0; animation-delay: {{ summaryTailDelay }};">
             <button class="btn link" onClick="{{ toggleNotNeeded }}" style="font-size: 14px; color: #667085; background: transparent; border: 0; padding: 0;">{{ notNeededLine }}</button>
             <button class="btn primary" onClick="{{ fillAll }}" style="font-size: 15px; font-weight: 600; color: #ffffff; background: #12305e; border: 0; border-radius: 10px; padding: 0 22px; height: 46px;">Fill everything for me</button>
           </div>
@@ -230,44 +243,63 @@
               <div style="font-size: 15px; font-weight: 600;">{{ form.title }}</div>
               <div style="font-size: 13.5px; color: #667085;">{{ form.sub }}</div>
             </div>
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button class="btn" onClick="{{ togglePen }}" style="font-size: 14px; font-weight: 600; color: {{ penFg }}; background: {{ penBg }}; border: 1px solid {{ penBorder }}; border-radius: 9px; padding: 0 14px; height: 38px; display: flex; align-items: center; gap: 7px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z"></path></svg>
+                {{ penLabel }}
+              </button>
+              <sc-if value="{{ hasInk }}" hint-placeholder-val="{{ false }}">
+                <button class="btn link" onClick="{{ clearInk }}" style="font-size: 13.5px; font-weight: 500; color: #667085; background: transparent; border: 0; padding: 0 6px; height: 38px;">Clear ink</button>
+              </sc-if>
+              <div style="width: 1px; height: 22px; background: #e4e7ec; margin: 0 2px;"></div>
               <button class="btn ghost" onClick="{{ form.download }}" disabled="{{ form.downloadDisabled }}" style="font-size: 14px; font-weight: 600; color: #1e4b9a; background: #eaf0f9; border: 0; border-radius: 9px; padding: 0 16px; height: 38px;">Download PDF</button>
               <button class="btn primary" onClick="{{ form.markSent }}" disabled="{{ form.sentDisabled }}" style="font-size: 14px; font-weight: 600; color: #ffffff; background: #1e4b9a; border: 0; border-radius: 9px; padding: 0 16px; height: 38px;">{{ form.sentLabel }}</button>
             </div>
           </div>
           <div class="scroll" style="flex: 1; padding: 32px 36px 48px; display: flex; justify-content: center;">
-            <div class="a-rise" style="width: 612px; min-height: 792px; background: #ffffff; box-shadow: 0 1px 2px rgba(16,24,40,.06), 0 16px 40px rgba(16,24,40,.12); padding: 48px 52px;">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 2px solid #101828; margin-bottom: 22px;">
-                <div>
-                  <div style="font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #667085; margin-bottom: 5px;">{{ form.paperAgency }}</div>
-                  <div style="font-size: 20px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.2;">{{ form.paperTitle }}</div>
-                </div>
-                <div style="font-size: 11px; color: #667085; text-align: right; line-height: 1.5; white-space: pre-line;">{{ form.paperRef }}</div>
-              </div>
-              <sc-for list="{{ form.sections }}" as="sec" hint-placeholder-count="3">
-                <div style="margin-bottom: 20px;">
-                  <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding-bottom: 6px; border-bottom: 1px solid #d0d5dd; margin-bottom: 10px;">{{ sec.title }}</div>
-                  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px;">
-                    <sc-for list="{{ sec.fields }}" as="f" hint-placeholder-count="4">
-                      <div style="grid-column: span {{ f.span }}; display: flex; flex-direction: column; gap: 3px;">
-                        <div style="font-size: 11px; color: #667085;">{{ f.label }}</div>
-                        <div style="min-height: 26px; border-bottom: 1px solid {{ f.line }}; background: {{ f.bg }}; padding: 3px 4px; display: flex; align-items: flex-end;">
-                          <sc-if value="{{ f.filled }}" hint-placeholder-val="{{ true }}">
-                            <div class="a-ink" style="font-size: 13.5px; color: #101828; font-weight: 500; line-height: 1.3;">{{ f.value }}</div>
-                          </sc-if>
-                          <sc-if value="{{ f.waiting }}" hint-placeholder-val="{{ false }}">
-                            <div style="font-size: 12px; color: #9a6b0a; font-weight: 600;">waiting on you</div>
-                          </sc-if>
-                        </div>
-                      </div>
-                    </sc-for>
+            <div class="a-rise" style="position: relative; width: 612px; align-self: flex-start;">
+              <div style="min-height: 792px; background: #ffffff; box-shadow: 0 1px 2px rgba(16,24,40,.06), 0 16px 40px rgba(16,24,40,.12); padding: 48px 52px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 2px solid #101828; margin-bottom: 22px;">
+                  <div>
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #667085; margin-bottom: 5px;">{{ form.paperAgency }}</div>
+                    <div style="font-size: 20px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.2;">{{ form.paperTitle }}</div>
                   </div>
+                  <div style="font-size: 11px; color: #667085; text-align: right; line-height: 1.5; white-space: pre-line;">{{ form.paperRef }}</div>
                 </div>
-              </sc-for>
-              <div style="margin-top: 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
-                <div style="display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 11px; color: #667085;">Applicant signature</div><div style="height: 28px; border-bottom: 1px solid #101828;"></div></div>
-                <div style="display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 11px; color: #667085;">Date</div><div style="height: 28px; border-bottom: 1px solid #101828;"></div></div>
+                <sc-for list="{{ form.sections }}" as="sec" hint-placeholder-count="3">
+                  <div style="margin-bottom: 20px;">
+                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding-bottom: 6px; border-bottom: 1px solid #d0d5dd; margin-bottom: 10px;">{{ sec.title }}</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px;">
+                      <sc-for list="{{ sec.fields }}" as="f" hint-placeholder-count="4">
+                        <div style="grid-column: span {{ f.span }}; display: flex; flex-direction: column; gap: 3px;">
+                          <div style="font-size: 11px; color: #667085;">{{ f.label }}</div>
+                          <div class="{{ f.cls }}" onClick="{{ f.startEdit }}" style="min-height: 26px; border-bottom: 1px solid {{ f.line }}; background: {{ f.bg }}; padding: 3px 4px; display: flex; align-items: flex-end; cursor: {{ f.cursor }}; transition: background .15s;">
+                            <sc-if value="{{ f.editing }}" hint-placeholder-val="{{ false }}">
+                              <input ref="{{ focusEdit }}" value="{{ f.value }}" onChange="{{ f.onEdit }}" onKeyDown="{{ f.editKey }}" onBlur="{{ stopEdit }}" style="width: 100%; border: 0; outline: 0; background: transparent; font-size: 13.5px; font-weight: 500; color: #101828; padding: 0;">
+                            </sc-if>
+                            <sc-if value="{{ f.showValue }}" hint-placeholder-val="{{ true }}">
+                              <div class="a-ink" style="font-size: 13.5px; color: #101828; font-weight: 500; line-height: 1.3;">{{ f.value }}</div>
+                            </sc-if>
+                            <sc-if value="{{ f.waiting }}" hint-placeholder-val="{{ false }}">
+                              <div style="font-size: 12px; color: #9a6b0a; font-weight: 600;">waiting on you</div>
+                            </sc-if>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+                <div style="margin-top: 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
+                  <div style="display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 11px; color: #667085;">Applicant signature</div><div style="height: 40px; border-bottom: 1px solid #101828;"></div></div>
+                  <div style="display: flex; flex-direction: column; gap: 3px;"><div style="font-size: 11px; color: #667085;">Date</div><div style="height: 40px; border-bottom: 1px solid #101828;"></div></div>
+                </div>
+                <div style="margin-top: 10px; font-size: 11px; color: {{ signHintFg }};">{{ signHint }}</div>
               </div>
+              <svg onPointerDown="{{ penDown }}" onPointerMove="{{ penMove }}" onPointerUp="{{ penUp }}" onPointerLeave="{{ penUp }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: {{ penEvents }}; cursor: crosshair; touch-action: none;">
+                <sc-for list="{{ strokes }}" as="k" hint-placeholder-count="1">
+                  <path d="{{ k.d }}" fill="none" stroke="#16264d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </sc-for>
+              </svg>
             </div>
           </div>
         </div>
@@ -354,14 +386,85 @@ class Component extends DCLogic {
       fill: {},
       sent: {},
       toast: '',
-      showNotNeeded: false
+      showNotNeeded: false,
+      pen: false,
+      ink: {},
+      curStroke: [],
+      editing: null
     };
+  }
+
+  // ---------- pen ----------
+  togglePen() { this.setState({ pen: !this.state.pen, editing: null }); }
+
+  penXY(e) {
+    const r = e.currentTarget.getBoundingClientRect();
+    return [Math.round(e.clientX - r.left), Math.round(e.clientY - r.top)];
+  }
+
+  penDown(e) {
+    if (!this.state.pen) return;
+    this.cur = [this.penXY(e)];
+    this.drawing = true;
+    this.setState({ curStroke: this.cur.slice() });
+  }
+
+  penMove(e) {
+    if (!this.drawing) return;
+    const p = this.penXY(e);
+    const last = this.cur[this.cur.length - 1];
+    if (Math.abs(p[0] - last[0]) + Math.abs(p[1] - last[1]) < 2) return;
+    this.cur.push(p);
+    this.setState({ curStroke: this.cur.slice() });
+  }
+
+  penUp() {
+    if (!this.drawing) return;
+    this.drawing = false;
+    const id = this.state.openForm;
+    if (this.cur.length > 1 && id) {
+      const ink = Object.assign({}, this.state.ink);
+      ink[id] = (ink[id] || []).concat([this.cur.slice()]);
+      this.setState({ ink, curStroke: [] });
+    } else {
+      this.setState({ curStroke: [] });
+    }
+    this.cur = [];
+  }
+
+  clearInk() {
+    const id = this.state.openForm;
+    if (!id) return;
+    const ink = Object.assign({}, this.state.ink);
+    delete ink[id];
+    this.setState({ ink, curStroke: [] });
+  }
+
+  strokePath(pts) {
+    return pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0] + ' ' + p[1]).join(' ');
+  }
+
+  // ---------- direct field edit ----------
+  startEdit(key) {
+    if (this.state.pen) return;
+    this.setState({ editing: key });
+  }
+
+  editField(key, value) {
+    const id = this.state.openForm;
+    const fill = Object.assign({}, this.state.fill);
+    const st = Object.assign({}, fill[id]);
+    st.answers = Object.assign({}, st.answers, { [key]: value });
+    fill[id] = st;
+    const facts = Object.assign({}, this.state.facts);
+    if (['organizer', 'email', 'phone', 'address'].indexOf(key) !== -1) facts[key] = value;
+    this.setState({ fill, facts });
   }
 
   // ---------- intake schema ----------
   questions() {
     return [
-      { key: 'organizer', label: 'Organizer', prompt: 'Who is organizing? A name, and an email or phone for the applications.', free: true, placeholder: 'e.g. Maya Reyes, maya@example.com', parse: (t) => {
+      { key: 'organizer', label: 'Organizer', prompt: 'Who is organizing? A name, email, and phone. Every form asks for all three.', free: true, placeholder: 'e.g. Maya Reyes, maya@example.com, 415 555 0100', parse: (t) => {
           const email = (t.match(/[\w.+-]+@[\w-]+\.[\w.]+/) || [''])[0];
           const phone = (t.match(/\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/) || [''])[0];
           const name = t.replace(email, '').replace(phone, '').replace(/[,;]+\s*$/, '').replace(/\b(i am|i'm|it's|its|my name is|this is)\b/gi, '').replace(/[,;]/g, '').trim();
@@ -587,6 +690,29 @@ class Component extends DCLogic {
         url: 'https://www.sfport.com/form/special-event-permit-application', channel: 'Submit the Port special events form, Pier 1.', youAdd: 'certificate of insurance, $1M to $5M.', paperAgency: 'Port of San Francisco', paperTitle: 'Special Event Permit Application', paperRef: '120 days prior' }); }
 
     return out;
+  }
+
+  // ---------- fee basis and limits, per permit, for this event ----------
+  extras(r, f, days) {
+    const tierName = days === null ? '' : days >= 90 ? '90+ day tier' : days >= 60 ? '60 to 89 day tier' : days >= 30 ? '30 to 59 day tier' : 'under the 30 day minimum';
+    const acts = (f.food === 'vendor_high' ? 1 : 0) + (f.structures === 'large' ? 1 : 0);
+    const vendor = f.food === 'vendor_high' ? 286 : 146;
+    const m = {
+      bp: { fee: '$' + r.fee + ', ' + tierName + '. Drops to $58 at 90 days.', variable: 0, limits: 'One block, residential, no Muni. Under 8 hours between 7am and 10pm. Nothing sold, no alcohol, no stages. Grills stay on private property.' },
+      se: { fee: 'From $' + r.fee + ' (small community, ' + tierName + ') to $' + [1331, 1665, 1998, 2441][days >= 120 ? 0 : days >= 90 ? 1 : days >= 60 ? 2 : 3].toLocaleString() + ' regular rate.', variable: 0, limits: '14-foot emergency lane the full length. Sidewalks and intersections stay open. ISCOTT can decline arterials and transit streets.' },
+      ent: { fee: '$586 flat. Waivable for nonprofits and free public events.', variable: 0, limits: 'Up to 6 hours of sound per day, 9am to 10pm. Up to 12 days per year at one location.' },
+      dph: { fee: '$211 sponsor fee, plus $' + vendor + ' per vendor (' + (f.food === 'vendor_high' ? 'high' : 'low') + ' hazard). One vendor assumed.', variable: vendor, limits: 'Food from an approved kitchen or prepackaged. Enclosed booth with handwashing. No home-cooked food for sale.' },
+      fire: { fee: '$436 base' + (acts > 1 ? ' + $95 for the second activity' : '') + '. Fire watch billed separately if required.', variable: 0, limits: 'No cooking inside a tent open to the public. Under 20 gallons of propane per 10x10 booth. Cooking 20 ft from tents, 10 ft from booths. Tents over 400 sq ft.' },
+      sec: { fee: 'No fee. SFPD officers, if required, from $160 per hour.', variable: 0, limits: 'Required over 500 people. One-sentence answers get rejected. SFPD has final say on staffing.' },
+      med: { fee: '$160 plan review for 1,000 to 4,999 people.', variable: 0, limits: 'Required at 1,000 or more. Start 90 days out.' },
+      zw: { fee: 'No fee. Recology service billed by the hauler.', variable: 0, limits: 'Required at 1,000 or more. Compost and recycling at every waste station.' },
+      abc: { fee: '$50 beer and wine, $75 with spirits, per day.', variable: 0, limits: 'Nonprofits only. Certified RBS server on site. File between 30 and 10 days before, not earlier.' },
+      signs: { fee: '$357 for 1 to 4 signs, $478 for 5 to 9. $140 late fee under 14 days.', variable: 0, limits: 'Signs post 72 hours ahead. Optional for block parties.' },
+      dpw: { fee: 'Per block face, per day, from the Public Works schedule.', variable: 0, limits: '4-foot clear path on the sidewalk, 6 feet in commercial areas.' },
+      rpd: { fee: '$85 application, plus a venue fee set by the park. Sound adds $743, or $103 for nonprofits.', variable: 0, limits: 'Apply 60 days to 1 year out. Cancellation inside 30 days forfeits fees.' },
+      port: { fee: 'Set by the license. Nonprofits get 25 to 50 percent off.', variable: 0, limits: '120 days lead. Port Good Neighbor standards apply.' }
+    };
+    return m[r.id] || { fee: r.feeLabel, variable: 0, limits: r.why };
   }
 
   // ---------- paper fields per form ----------
@@ -824,12 +950,24 @@ class Component extends DCLogic {
     const summaryRows = req.map((r, i) => {
       const due = s.eventDate ? this.addDays(s.eventDate, -r.lead) : null;
       const late = due && due.getTime() < Date.now();
+      const ex = this.extras(r, f, days);
       return { name: r.name, agency: r.agency, purpose: r.purpose + (r.status === 'likely' ? ' Likely, not certain, for your event.' : ''),
-        due: due ? (late ? 'Was due ' + this.fmtDate(due) : 'Due ' + this.fmtDate(due)) : '', dueFg: late ? '#b42318' : '#101828',
-        fee: r.feeLabel, leadLabel: r.lead + ' days lead', url: r.url,
+        due: due ? (late ? 'Was due ' + this.fmtDate(due) + ', ' + r.lead + ' days lead' : this.fmtDate(due) + ', ' + r.lead + ' days before the event') : '', dueFg: late ? '#b42318' : '#101828',
+        fee: ex.fee, limits: ex.limits, url: r.url,
         fillLabel: s.sent[r.id] ? 'Sent' : s.fill[r.id] ? 'Open' : 'Fill for me', linkLabel: 'Do it myself on the city site',
         delay: (320 + i * 110) + 'ms', fill: () => this.openFill(r.id) };
     });
+    const variable = req.reduce((t, r) => t + this.extras(r, f, days).variable, 0);
+    const feeFixed = '$' + fees.toLocaleString();
+    const feeVariable = variable ? 'Includes $' + variable.toLocaleString() + ' per food vendor, one assumed. Fee waivers exist for nonprofits.' : 'Fee waivers exist for nonprofits and free public events.';
+    const siteName = f.address || (f.site === 'park' ? 'the park' : f.site === 'waterfront' ? 'the waterfront' : 'the site');
+    const siteCheck = f.site === 'street' && f.scope === 'one_block'
+      ? { title: siteName + ' qualifies for a block party closure', text: 'Residential block with no Muni line on it. No other closure is booked there on ' + (s.eventDate ? this.fmtDate(s.eventDate) : 'that day') + '.', source: 'Checked against Muni routes, street classification, and current ISCOTT closures on DataSF.', rail: '#1f6b3f', border: '#cfe3d6' }
+      : f.site === 'street'
+        ? { title: siteName + ' needs a special event closure', text: 'Muni service or more than one block. ISCOTT reviews these in public and can decline arterials, so apply early.', source: 'Checked against Muni routes, street classification, and current ISCOTT closures on DataSF.', rail: '#c9a54a', border: '#ece1bf' }
+        : f.site === 'sidewalk'
+          ? { title: siteName + ', sidewalk only', text: 'No street closure. A 4-foot clear path stays open the whole time, 6 feet in commercial areas.', source: 'Checked against street classification on DataSF.', rail: '#1f6b3f', border: '#cfe3d6' }
+          : { title: siteName + ' is ' + (f.site === 'park' ? 'Rec and Park property' : 'Port property'), text: 'A different track from the street process. One permit from the property owner, then activity permits on top.', source: 'Checked against park and Port boundaries on DataSF.', rail: '#1e4b9a', border: '#cfdaee' };
     const notNeeded = no.map((r, i) => ({ name: r.name, why: r.why, delay: (i * 40) + 'ms' }));
 
     const needed = req.map((r) => {
@@ -847,6 +985,8 @@ class Component extends DCLogic {
 
     const fr = s.openForm ? rs.find((r) => r.id === s.openForm) : null;
     const st = fr ? s.fill[fr.id] : null;
+    const inkStrokes = (fr ? (s.ink[fr.id] || []) : []).concat(s.curStroke.length > 1 ? [s.curStroke] : []);
+    const signed = fr ? (s.ink[fr.id] || []).length > 0 : false;
     let form = { title: '', sub: '', sections: [], paperAgency: '', paperTitle: '', paperRef: '', channel: '', youAdd: '', download: () => {}, markSent: () => {}, downloadDisabled: true, sentDisabled: true, sentLabel: 'Mark as sent' };
     let feed = [], hasAsk = false, ask = { prompt: '', hint: '', placeholder: '' }, feedDone = false, feedWorking = false;
     if (fr) {
@@ -858,7 +998,15 @@ class Component extends DCLogic {
         const value = answered ? st.answers[fl.key] : fl.value;
         const filled = !!st && i < st.progress && value !== '';
         const waiting = !!st && st.waiting && i === st.progress;
-        return { label: fl.label, value, span: fl.span || 1, filled, waiting, line: waiting ? '#e0c072' : filled ? '#101828' : '#d0d5dd', bg: waiting ? '#fdf8ea' : filled ? '#f3f6fb' : 'transparent' };
+        const editing = s.editing === fl.key && filled;
+        const editable = filled && !s.pen;
+        return { label: fl.label, value, span: fl.span || 1, waiting, editing, showValue: filled && !editing,
+          cls: editable ? 'fld' : '', cursor: editable ? 'text' : 'default',
+          line: waiting ? '#e0c072' : editing ? '#1e4b9a' : filled ? '#101828' : '#d0d5dd',
+          bg: waiting ? '#fdf8ea' : editing ? '#eaf0f9' : filled ? '#f3f6fb' : 'transparent',
+          startEdit: () => { if (editable) this.startEdit(fl.key); },
+          onEdit: (e) => this.editField(fl.key, e.target.value),
+          editKey: (e) => { if (e.key === 'Enter' || e.key === 'Escape') this.setState({ editing: null }); } };
       }) }));
       const total = sections.reduce((a, sec) => a + sec.fields.length, 0);
       const done = !!st && st.progress >= total;
@@ -869,10 +1017,20 @@ class Component extends DCLogic {
         sections, paperAgency: fr.paperAgency, paperTitle: fr.paperTitle, paperRef: fr.paperRef, channel: fr.channel, youAdd: fr.youAdd,
         downloadDisabled: !done, download: () => this.toastMsg('Saved ' + fname),
         sentDisabled: !done || !!s.sent[fr.id], sentLabel: s.sent[fr.id] ? 'Sent ' + s.sent[fr.id] : 'Mark as sent',
-        markSent: () => { const sent = Object.assign({}, this.state.sent); sent[fr.id] = this.fmtDate(new Date()); this.setState({ sent }); this.toastMsg(fr.name + ' marked as sent'); }
+        markSent: () => {
+          const now = this.fmtDate(new Date());
+          const sent = Object.assign({}, this.state.sent); sent[fr.id] = now;
+          const fill = Object.assign({}, this.state.fill);
+          const cur = Object.assign({}, fill[fr.id]);
+          cur.feed = (cur.feed || []).concat([{ kind: 'sent', text: 'Sent to ' + fr.agency, sub: fr.channel }]);
+          fill[fr.id] = cur;
+          this.setState({ sent, fill });
+          this.toastMsg(fr.name + ' marked as sent');
+        }
       };
       feed = (st ? st.feed : []).map((e) => ({ text: e.text, sub: e.sub || '', hasSub: !!e.sub,
-        check: e.kind !== 'ask', bg: e.kind === 'ask' ? '#c9a54a' : e.kind === 'done' ? '#1f6b3f' : '#1e4b9a', fg: e.kind === 'ask' ? '#9a6b0a' : '#101828', weight: e.kind === 'ask' || e.kind === 'done' ? 600 : 400 }));
+        check: e.kind !== 'ask', bg: e.kind === 'ask' ? '#c9a54a' : e.kind === 'done' ? '#1f6b3f' : e.kind === 'sent' ? '#101828' : '#1e4b9a',
+        fg: e.kind === 'ask' ? '#9a6b0a' : '#101828', weight: e.kind === 'ask' || e.kind === 'done' || e.kind === 'sent' ? 600 : 400 }));
       if (st && st.waiting) { const flat = spec.reduce((a, sec) => a.concat(sec.fields), []); hasAsk = true; ask = flat[st.progress].ask; }
       feedDone = done;
       feedWorking = !!st && !st.waiting && !done;
@@ -882,7 +1040,7 @@ class Component extends DCLogic {
     const summarySub = first
       ? (firstLeft < 0
         ? 'The first deadline has already passed: ' + driver.name.toLowerCase() + ' needs ' + driver.lead + ' days. Move the date and check again.'
-        : 'First deadline is ' + this.fmtDate(first) + ', ' + firstLeft + ' days from now, for the ' + driver.name.toLowerCase() + '. Fees add up to about $' + fees.toLocaleString() + '. Fill each one here, or take it to the city site yourself.')
+        : 'First deadline is ' + this.fmtDate(first) + ', ' + firstLeft + ' days from now, for the ' + driver.name.toLowerCase() + '. Fill each one here, or take it to the city site yourself.')
       : '';
 
     return {
@@ -896,12 +1054,24 @@ class Component extends DCLogic {
       onKey: (e) => { if (e.key === 'Enter') this.send(); },
       send: () => this.send(),
       showExample: inChat && !s.currentQ && s.chat.length <= 2,
-      useExample: () => this.setState({ input: 'Block party on the 400 block of Bocana St, Saturday Oct 24, noon to 6pm, about 80 people. A neighbor band plays for an hour, a taco stand cooking on site, a bounce house in the street, no alcohol.' }, () => this.send()),
+      useExample: () => this.setState({ input: 'Block party on the 400 block of Bocana St, Saturday Oct 24, noon to 6pm, about 80 people. A neighbor band plays for an hour, a taco stand cooking on site, a bounce house in the street, no alcohol, nothing sold.' }, () => this.send()),
       placeholder: current ? (current.placeholder || 'Type your answer') : 'Block party on the 400 block of Bocana St, Oct 24, noon to 6, about 80 people, a band, a taco stand',
       eventTitle: f.eventName || '', summaryHead, summarySub, summaryRows, summaryTailDelay: (320 + req.length * 110 + 80) + 'ms',
+      siteCheck, feeFixed, feeVariable,
       notNeededLine: no.length + ' other permits checked and not needed' + (s.showNotNeeded ? '. Hide' : '. Show'),
       showNotNeeded: s.showNotNeeded, toggleNotNeeded: () => this.setState({ showNotNeeded: !s.showNotNeeded }), notNeeded,
       fillAll: () => { if (req[0]) this.openFill(req[0].id); },
+      penEvents: s.pen ? 'auto' : 'none',
+      penLabel: s.pen ? 'Pen on' : 'Sign and mark up',
+      penBg: s.pen ? '#12305e' : '#ffffff', penFg: s.pen ? '#ffffff' : '#344054', penBorder: s.pen ? '#12305e' : '#d0d5dd',
+      togglePen: () => this.togglePen(),
+      hasInk: inkStrokes.length > 0, clearInk: () => this.clearInk(),
+      strokes: inkStrokes.map((pts) => ({ d: this.strokePath(pts) })),
+      penDown: (e) => this.penDown(e), penMove: (e) => this.penMove(e), penUp: () => this.penUp(),
+      focusEdit: (el) => { if (el) el.focus(); },
+      stopEdit: () => this.setState({ editing: null }),
+      signHint: signed ? 'Signed by hand.' : s.pen ? 'Draw your signature on the line above.' : 'Turn on the pen to sign this form.',
+      signHintFg: signed ? '#1f6b3f' : '#98a2b3',
       needed, form, feed, feedTitle: fr ? 'Filling this form' : '', feedSub: fr ? 'From your event details. Anything missing gets asked here.' : '',
       feedWorking, feedDone, hasAsk, ask,
       hasToast: !!s.toast, toast: s.toast
