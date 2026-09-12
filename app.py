@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from llm import LLMClient
 from permits import PERMITS, PermitType
+from routes import router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("permit-api")
@@ -19,6 +20,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(router)
 
 llm = LLMClient()
 
