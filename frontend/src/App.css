@@ -89,6 +89,25 @@ button:disabled {
   text-decoration: underline;
 }
 
+.reasoning {
+  background: #f0f4ff;
+  border: 1px solid #cce0ff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.reasoning h2 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #0052a3;
+}
+
+.reasoning p {
+  color: #444;
+  line-height: 1.5;
+}
+
 .error {
   margin-top: 16px;
   padding: 12px;

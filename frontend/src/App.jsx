@@ -4,6 +4,7 @@ import "./App.css";
 function App() {
   const [description, setDescription] = useState("");
   const [permits, setPermits] = useState([]);
+  const [reasoning, setReasoning] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searched, setSearched] = useState(false);
@@ -15,6 +16,7 @@ function App() {
     setLoading(true);
     setError(null);
     setPermits([]);
+    setReasoning("");
     setSearched(false);
 
     try {
@@ -26,6 +28,7 @@ function App() {
       if (!res.ok) throw new Error("Request failed");
       const data = await res.json();
       setPermits(data.permits);
+      setReasoning(data.reasoning || "");
       setSearched(true);
     } catch {
       setError("Something went wrong. Please try again.");
@@ -59,6 +62,12 @@ function App() {
 
       {searched && (
         <div className="results">
+          {reasoning && (
+            <div className="reasoning">
+              <h2>Analysis</h2>
+              <p>{reasoning}</p>
+            </div>
+          )}
           <h2>Permits You May Need</h2>
           {permits.length === 0 ? (
             <p>No permits found for that description.</p>
