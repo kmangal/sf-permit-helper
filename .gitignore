@@ -218,3 +218,4 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+design/canvas/sf-permit-navigator.html
