@@ -63,12 +63,8 @@ export function blocker(terminal: TerminalTurn): Blocker | null {
   };
 }
 
-export function feeSummary(terminal: TerminalTurn): { fixed: string; note: string } {
+/** The known fee total; "+" when some fees grow with the event. */
+export function feeSummary(terminal: TerminalTurn): string {
   const total = feeTotal(terminal.rules);
-  return {
-    fixed: fmtMoney(total.cents) + (total.varies ? "+" : ""),
-    note: total.varies
-      ? "Known fixed fees. Some grow with your event; see each permit."
-      : "Known fixed fees. Waivers exist for some nonprofits.",
-  };
+  return fmtMoney(total.cents) + (total.varies ? "+" : "");
 }

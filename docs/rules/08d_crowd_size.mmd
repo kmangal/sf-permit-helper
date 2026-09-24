@@ -12,14 +12,16 @@ flowchart TD
   n4{"peak_attendance #gt; 1000?"}
   start --> n4
   n4 -->|yes| r_event_medical_plan
-  n5{"swimmers #gt; 100?"}
+  n5{"open_water_swimming?"}
   start --> n5
-  n5 -->|yes| r_event_medical_plan
-  n6{"location in [street_or_sidewalk, city_park, port, treasure_island]?"}
-  start --> n6
-  n7{"peak_attendance #gt; 100?"}
-  n6 -->|yes| n7
-  n7 -->|yes| r_bottled_water_restriction
+  n6{"swimmers #gt; 100?"}
+  n5 -->|yes| n6
+  n6 -->|yes| r_event_medical_plan
+  n7{"location in [street_or_sidewalk, city_park, port, treasure_island]?"}
+  start --> n7
+  n8{"peak_attendance #gt; 100?"}
+  n7 -->|yes| n8
+  n8 -->|yes| r_bottled_water_restriction
   r_security_plan["Formal security plan<br/><i>security_plan</i>"]:::plan
   r_event_medical_plan["Event Medical Plan (EMS Agency Policy 7010)<br/><i>event_medical_plan</i>"]:::plan
   r_bottled_water_restriction["No single-serve bottled water under 1 liter at events over 100 attendees<br/><i>bottled_water_restriction</i>"]:::requirement

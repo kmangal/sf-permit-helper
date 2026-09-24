@@ -33,7 +33,7 @@ describe("PermitCard", () => {
 
 describe("FeeCard", () => {
   it("shows the estimated fee total", () => {
-    render(<FeeCard fees={{ fixed: "$122", note: "Known" }} />);
+    render(<FeeCard fees="$122" />);
     expect(screen.getByText("Estimated fees for this event")).toBeInTheDocument();
     expect(screen.getByText("$122")).toBeInTheDocument();
   });

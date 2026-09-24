@@ -1,4 +1,5 @@
 import { type Navigator, OPENING_CHAT } from "../../hooks/useNavigator.ts";
+import { useStickToBottom } from "../../hooks/useStickToBottom.ts";
 import { Working } from "../ui/Working.tsx";
 import { ChatMessage } from "./ChatMessage.tsx";
 import chatStyles from "./ChatMessage.module.css";
@@ -19,11 +20,13 @@ export function IntakeScreen(nav: Props) {
   const asking = question && !thinking;
   // With choices on screen the composer asks about the question; without, it answers it.
   const clarifies = asking && question.options.length > 0;
+  // Each new message scrolls into view, even if the reader had scrolled up.
+  const { scroller, content } = useStickToBottom<HTMLDivElement, HTMLDivElement>(chat.length);
   return (
     <div className={styles.screen}>
       <section className={styles.main} aria-label="Intake">
-        <div className={styles.transcript}>
-          <div className={`${styles.column} ${styles.messages}`}>
+        <div ref={scroller} className={styles.transcript}>
+          <div ref={content} className={`${styles.column} ${styles.messages}`}>
             {chat.map((item, i) => (
               <ChatMessage key={i} item={item}>
                 {fresh && item === OPENING_CHAT.at(-1) && (

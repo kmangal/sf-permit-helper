@@ -161,7 +161,7 @@ facts:
     question: Will the entertainment stay within the venue permit's approved hours?
   venue_approved_outdoor_entertainment:
     type: bool
-    question: Is the premises already approved for outdoor entertainment under a POE or LLP permit?
+    question: Is the premises already approved for outdoor entertainment under a Place of Entertainment (POE) or Limited Live Performance (LLP) permit?
   amplified_hours_per_day:
     type: number
     question: How many hours per day of outdoor amplified sound or entertainment?
@@ -186,9 +186,12 @@ facts:
   race_participants:
     type: int
     question: How many race participants?
+  open_water_swimming:
+    type: bool
+    question: Will people swim in open water (the Bay, ocean or a lake) as part of the event?
   swimmers:
     type: int
-    question: How many swimmers, if any?
+    question: How many swimmers?
 
   # --- food and alcohol -------------------------------------------------------
   food_to_public:
@@ -221,6 +224,9 @@ facts:
     question: Will a licensed venue serve alcohol under its own existing license?
 
   # --- fire and structures ----------------------------------------------------
+  tents_or_membrane_structures:
+    type: bool
+    question: Will the event have tents or membrane structures (including pop-up canopies)?
   tent_max_sqft:
     type: number
     question: What is the floor area of the largest tent or membrane structure (sq ft)?
@@ -1300,6 +1306,7 @@ rules:
     when:
       all:
         - {macro: city_land}
+        - {fact: tents_or_membrane_structures, op: eq, value: true}
         - {fact: tent_max_sqft, op: gt, value: 400}
     requires: [group:property_permission]
     lead_time: {min_business_days: 5}
@@ -1331,6 +1338,7 @@ rules:
     when:
       all:
         - {macro: city_land}
+        - {fact: tents_or_membrane_structures, op: eq, value: true}
         - {fact: canopy_total_sqft, op: gt, value: 700}
         - {fact: canopy_firebreaks_12ft, op: eq, value: false}
     requires: [group:property_permission]
@@ -1361,6 +1369,7 @@ rules:
     when:
       all:
         - {macro: city_land}
+        - {fact: tents_or_membrane_structures, op: eq, value: true}
         - {fact: tent_occupant_load, op: gte, value: 50}
     sources: [sffd_bulletin_5_10]
     confidence: official
@@ -1504,7 +1513,9 @@ rules:
         - {macro: city_land}
         - any:
             - {fact: peak_attendance, op: gt, value: 1000}
-            - {fact: swimmers, op: gt, value: 100}
+            - all:
+                - {fact: open_water_swimming, op: eq, value: true}
+                - {fact: swimmers, op: gt, value: 100}
     fee:
       range_usd: [54, 1089]
       note: >-
@@ -1573,6 +1584,7 @@ scenarios:
       food_to_public: false
       food_trucks: false
       alcohol_served: false
+      tents_or_membrane_structures: true
       tent_max_sqft: 0
       tent_occupant_load: 0
       canopy_total_sqft: 200
@@ -1582,7 +1594,7 @@ scenarios:
       generator_diesel_gal: 0
       inflatables_flame_effects_or_flammable_liquids: false
       temporary_structures_or_construction: false
-      swimmers: 0
+      open_water_swimming: false
     expected_permits: [sfmta_block_party_closure, ec_one_time_outdoor]
 
   - id: two_block_street_fair_with_beer
@@ -1619,6 +1631,7 @@ scenarios:
       free_admission: true
       licensed_premises: false
       venue_serves_under_own_license: false
+      tents_or_membrane_structures: true
       tent_max_sqft: 0
       tent_occupant_load: 0
       canopy_total_sqft: 2000
@@ -1628,7 +1641,7 @@ scenarios:
       generator_diesel_gal: 0
       inflatables_flame_effects_or_flammable_liquids: false
       temporary_structures_or_construction: true
-      swimmers: 0
+      open_water_swimming: false
     expected_permits:
       - sfmta_special_event_closure
       - ec_one_time_outdoor
@@ -1662,6 +1675,7 @@ scenarios:
       free_admission: false
       licensed_premises: false
       venue_serves_under_own_license: false
+      tents_or_membrane_structures: false
       tent_max_sqft: 0
       tent_occupant_load: 0
       canopy_total_sqft: 0
@@ -1670,7 +1684,7 @@ scenarios:
       generator_diesel_gal: 0
       inflatables_flame_effects_or_flammable_liquids: false
       temporary_structures_or_construction: false
-      swimmers: 0
+      open_water_swimming: false
     expected_permits:
       - planning_temporary_use_authorization
       - sffd_place_of_assembly
@@ -1694,6 +1708,7 @@ scenarios:
       food_to_public: false
       food_trucks: false
       alcohol_served: false
+      tents_or_membrane_structures: true
       tent_max_sqft: 0
       tent_occupant_load: 0
       canopy_total_sqft: 100
@@ -1703,6 +1718,6 @@ scenarios:
       generator_diesel_gal: 0
       inflatables_flame_effects_or_flammable_liquids: false
       temporary_structures_or_construction: false
-      swimmers: 0
+      open_water_swimming: false
     expected_permits: []
     expected_other: [rpd_no_event_permit]

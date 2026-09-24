@@ -64,7 +64,7 @@ describe("blocker", () => {
 
 describe("feeSummary", () => {
   it("marks variable totals with a plus", () => {
-    expect(feeSummary(terminal()).fixed).toBe("$122");
-    expect(feeSummary(terminal({ rules: [rule({ fee: fee({ amount_usd_from: 50 }) })] })).fixed).toBe("$50+");
+    expect(feeSummary(terminal())).toBe("$122");
+    expect(feeSummary(terminal({ rules: [rule({ fee: fee({ amount_usd_from: 50 }) })] }))).toBe("$50+");
   });
 });
