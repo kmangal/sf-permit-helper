@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "packages": {
+    "python": "3.13.1",
+    "uv": "0.12.12",
+    "node": "24"
+  },
+  "caches": {
+    "uv": { "directory": "/opt/uv-cache", "type": "shared" },
+    "npm": { "directory": "/root/.npm", "type": "shared" }
+  },
+  "steps": {
+    "install": {
+      "inputs": [{ "step": "packages:mise" }],
+      "caches": ["uv", "npm"],
+      "variables": {
+        "UV_CACHE_DIR": "/opt/uv-cache",
+        "UV_COMPILE_BYTECODE": "1",
+        "UV_LINK_MODE": "copy",
+        "UV_PYTHON_DOWNLOADS": "never"
+      },
+      "commands": [
+        { "src": "backend/pyproject.toml", "dest": "backend/pyproject.toml" },
+        { "src": "backend/uv.lock", "dest": "backend/uv.lock" },
+        { "src": "backend/.python-version", "dest": "backend/.python-version" },
+        { "src": "frontend/package.json", "dest": "frontend/package.json" },
+        { "src": "frontend/package-lock.json", "dest": "frontend/package-lock.json" },
+        "cd backend && uv sync --locked --no-dev",
+        "cd frontend && npm ci"
+      ]
+    },
+    "build": {
+      "inputs": [
+        { "step": "install" },
+        {
+          "local": true,
+          "include": ["backend", "frontend"],
+          "exclude": ["backend/.venv", "backend/.env", "frontend/node_modules", "frontend/dist"]
+        }
+      ],
+      "commands": ["cd frontend && npm run build"]
+    }
+  },
+  "deploy": {
+    "startCommand": "cd backend && exec .venv/bin/uvicorn app.main:app --host '' --port ${PORT:-8000}",
+    "inputs": [
+      {
+        "step": "packages:mise",
+        "include": ["/mise/shims", "/mise/installs", "/usr/local/bin/mise", "/etc/mise/config.toml", "/root/.local/state/mise"]
+      },
+      { "step": "build", "include": ["backend", "frontend/dist"], "exclude": ["backend/.env", "backend/tests"] }
+    ],
+    "variables": {
+      "PYTHONUNBUFFERED": "1",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    }
+  }
+}

@@ -19,6 +19,9 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
+[tool.poe.tasks]
+format = { sequence = ["ruff check --fix .", "ruff format ."], default_item_type = "cmd", help = "Fix lint (incl. import sorting), then format" }
+
 [tool.ty.environment]
 python-version = "3.13"
 
@@ -26,6 +29,7 @@ python-version = "3.13"
 dev = [
     "commitizen==4.19.0",
     "import-linter==2.15",
+    "poethepoet==0.48.0",
     "pre-commit==4.6.2",
     "pytest==9.1.1",
     "ruff==0.16.8",

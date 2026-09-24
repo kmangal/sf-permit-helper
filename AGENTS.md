@@ -25,8 +25,8 @@ Frontend runs on port 5173, proxies `/api` to port 8000.
 ## Commands
 
 ```bash
-# Lint and format
-ruff format .
+# Lint and format (from backend/)
+uv run poe format   # ruff check --fix . && ruff format . (check --fix sorts imports)
 ruff check .
 
 # Type check

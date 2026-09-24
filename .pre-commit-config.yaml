@@ -24,11 +24,13 @@ repos:
         name: ruff format
         entry: uv run --project backend ruff format
         language: system
+        exclude: ^\.agents/skills/
         types_or: [python, pyi]
       - id: ruff-check
         name: ruff check
         entry: uv run --project backend ruff check --fix
         language: system
+        exclude: ^\.agents/skills/
         types_or: [python, pyi]
       - id: ty
         name: ty check

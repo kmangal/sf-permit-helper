@@ -11,6 +11,7 @@ layers =
     app.routes
     app.navigator | app.models
     app.engine | app.environment | app.prompts
+    app.paths
 
 [importlinter:contract:engine-layers]
 name = Engine layers: diagrams and engine above model above logic
@@ -29,7 +30,6 @@ source_modules =
     app.engine
 forbidden_modules =
     fastapi
-    anthropic
     typesafe_sdk
     app.models
     app.environment
