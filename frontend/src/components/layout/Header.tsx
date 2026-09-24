@@ -14,7 +14,7 @@ export function Header() {
           {home ? (
             <>
               <Link className={styles.link} to="/rules">
-                How it decides
+                How it works
               </Link>
               <button type="button" className={styles.reset} onClick={() => navigate("/", { replace: true })}>
                 Start over

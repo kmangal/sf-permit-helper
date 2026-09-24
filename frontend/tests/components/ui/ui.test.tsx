@@ -40,7 +40,7 @@ describe("Header", () => {
         <Header />
       </MemoryRouter>,
     );
-    expect(screen.getByRole("link", { name: "How it decides" })).toHaveAttribute("href", "/rules");
+    expect(screen.getByRole("link", { name: "How it works" })).toHaveAttribute("href", "/rules");
     expect(screen.getByRole("button", { name: "Start over" })).toBeInTheDocument();
   });
 
