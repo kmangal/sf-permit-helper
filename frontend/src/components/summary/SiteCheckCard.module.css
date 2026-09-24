@@ -1,0 +1,9 @@
+.card { padding: 20px 24px; margin-bottom: 14px; animation-delay: 200ms; }
+.body { display: flex; flex-direction: column; gap: 5px; }
+.title { font-size: 16px; font-weight: 600; }
+.text { font-size: 15px; color: var(--text-2); line-height: 1.5; }
+.source { font-size: 13px; color: var(--faint); margin-top: 2px; }
+.fees { display: flex; flex-direction: column; justify-content: center; gap: 4px; border-left: 1px solid var(--border); padding-left: 24px; }
+.feesLabel { font-size: 13px; color: var(--muted); }
+.feesFixed { font-size: 24px; font-weight: 700; letter-spacing: -0.4px; }
+.feesNote { font-size: 13px; color: var(--muted); line-height: 1.4; }

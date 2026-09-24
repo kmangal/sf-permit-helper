@@ -1,0 +1,14 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["macro · ec_outdoor_extended"])
+  n1{"amplified_hours_per_day #gt; 6?"}
+  start --> n1
+  n1 -->|yes| m_ec_outdoor_extended
+  n2{"amplified_outside_9am_10pm?"}
+  start --> n2
+  n2 -->|yes| m_ec_outdoor_extended
+  n3{"entertainment_days_per_year_at_location #gt; 12?"}
+  start --> n3
+  n3 -->|yes| m_ec_outdoor_extended
+  m_ec_outdoor_extended(["✓ ec_outdoor_extended"]):::exemption
+  classDef exemption fill:#dcfce7,stroke:#15803d,color:#111

@@ -1,0 +1,1470 @@
+# San Francisco event permit rules
+# Converted from the nine Mermaid diagrams (00 overview .. 08 activity checks).
+#
+# ---------------------------------------------------------------------------
+# HOW TO READ THIS FILE
+# ---------------------------------------------------------------------------
+# facts      Everything a rule can ask about an event, with the question to
+#            ask the organizer. A fact left unanswered is "unknown".
+# macros     Named, reusable conditions (e.g. "block_party_eligible").
+# groups     Named sets of rules, used in `requires`.
+# sections   Diagram grouping: a title and the `entry` condition that routes
+#            an event into the section. Rules name one or more sections.
+# sources    Citation registry. Rules point here by id.
+# rules      One row per permit, plan, requirement, exemption or advisory.
+# scenarios  Worked examples with the rule ids each one should trigger.
+#
+# CONDITION GRAMMAR (the `when` field; omitted = always applies)
+#   {fact: <name>, op: <op>, value: <v>}   op: eq ne gt gte lt lte in not_in
+#   {all: [<cond>, ...]}                    every condition true
+#   {any: [<cond>, ...]}                    at least one true
+#   {not: <cond>}
+#   {macro: <name>}                         a condition from `macros`
+#   {rule: <id>}                            true if that rule is in effect on
+#                                           the as-of date and its `when` holds
+#   Evaluate with three-valued logic: an unknown fact makes a condition
+#   "undetermined" unless the rest of the expression already decides it.
+#   Report undetermined rules as "may apply; answer <facts> to resolve".
+#
+# REQUIRES
+#   `requires: [<rule id> | group:<name>]` means: every listed rule that
+#   APPLIES to this event must be approved before this one. Listed rules
+#   that don't apply are ignored. Topologically sort to get application order.
+#
+# DATES
+#   effective_from / effective_to (inclusive, ISO dates; null = open-ended).
+#   A rule outside its window is treated as not existing on the as-of date.
+#
+# CONFIDENCE
+#   official        stated by the issuing agency or in code
+#   official_scope  official source, but it was written for a narrower
+#                   situation than the rule applies it to here
+#   secondary       non-issuing source (another city, third-party site)
+#   editorial       judgment call, no source says this directly
+# ---------------------------------------------------------------------------
+
+schema_version: 1
+jurisdiction: City and County of San Francisco
+researched_on: 2026-09-22
+scope: >-
+  Events in private or public spaces (block parties, street fairs, farmers
+  markets, concerts, pop-ups, park events). Parades, marches/protests and film
+  production are out of scope.
+
+# ===========================================================================
+# FACTS
+# ===========================================================================
+facts:
+  # --- what and where -------------------------------------------------------
+  event_type:
+    type: enum
+    values: [general, farmers_market, parade, march_or_protest, film_production]
+    question: What kind of event is this?
+  location:
+    type: enum
+    values:
+      - private_residence       # home or yard
+      - commercial_indoor       # store, gallery, venue, office
+      - commercial_outdoor      # business patio, parking lot
+      - street_or_sidewalk      # City right of way
+      - city_park               # Rec and Park parks and plazas
+      - port                    # piers, Embarcadero, Ferry Building
+      - treasure_island         # Treasure Island or Yerba Buena Island
+      - federal_nps             # GGNRA: Crissy Field, Ocean Beach, Lands End, Fort Mason
+      - federal_presidio_trust  # Presidio Trust-managed areas
+    question: Who controls the land where the event happens?
+  indoors:
+    type: bool
+    question: Is the event inside a building? (Port and Treasure Island only)
+  open_to_public:
+    type: bool
+    question: Is the event open to the general public or advertised publicly?
+  sells_goods_or_services:
+    type: bool
+    question: Will anything be sold, including tickets, goods, or services?
+  promotes_business:
+    type: bool
+    question: Is the event used to promote a business?
+  zoning_matches_event_use:
+    type: bool
+    question: >-
+      Does the property's Planning Code use match the event? (e.g. a comedy
+      show in a vacant retail storefront does not match)
+  peak_attendance:
+    type: int
+    question: What is the most people expected on site at one time?
+
+  # --- streets ----------------------------------------------------------------
+  closes_street:
+    type: bool
+    question: Will any part of the roadway be closed to traffic?
+  recurring_closure:
+    type: bool
+    question: Will the street closure repeat weekly or monthly?
+  blocks_closed:
+    type: int
+    question: How many blocks will be closed?
+  closes_intersections:
+    type: bool
+    question: Does the closure include any intersection?
+  affects_muni:
+    type: bool
+    question: Does the closure affect any Muni route?
+  residential_street:
+    type: bool
+    question: Is it a residential street?
+  host_is_block_resident:
+    type: bool
+    question: Is the host a resident of the block, or a resident association covering it?
+  duration_hours:
+    type: number
+    question: How many hours long is the closure, including setup and cleanup?
+  within_7am_10pm:
+    type: bool
+    question: Does the closure fall entirely between 7am and 10pm?
+  in_entertainment_zone:
+    type: bool
+    question: Is the location inside a designated Entertainment Zone?
+  ez_to_go_alcohol:
+    type: bool
+    question: Will nearby licensed bars sell drinks to-go into the zone during the event?
+
+  # --- entertainment --------------------------------------------------------
+  live_entertainment:
+    type: bool
+    question: Will there be live entertainment (band, DJ, comedy, dance, fashion show)?
+  amplified_sound:
+    type: bool
+    question: Will there be amplified sound of any kind (speakers, PA, recorded music)?
+  venue_has_poe_or_llp:
+    type: bool
+    question: Does the venue hold a Place of Entertainment or Limited Live Performance permit?
+  within_venue_permitted_hours:
+    type: bool
+    question: Will the entertainment stay within the venue permit's approved hours?
+  venue_approved_outdoor_entertainment:
+    type: bool
+    question: Is the premises already approved for outdoor entertainment under a POE or LLP permit?
+  amplified_hours_per_day:
+    type: number
+    question: How many hours per day of outdoor amplified sound or entertainment?
+  amplified_outside_9am_10pm:
+    type: bool
+    question: Will outdoor sound run before 9am or after 10pm?
+  entertainment_days_per_year_at_location:
+    type: int
+    question: Including this event, how many days of entertainment at this location this calendar year?
+  is_concert:
+    type: bool
+    question: Is the event a concert or musical performance?
+  publicized_hours_ahead:
+    type: number
+    question: How many hours in advance will the concert be publicized?
+  has_band:
+    type: bool
+    question: Will a band or orchestra perform?
+  is_race:
+    type: bool
+    question: Is the event a race or marathon?
+  race_participants:
+    type: int
+    question: How many race participants?
+  swimmers:
+    type: int
+    question: How many swimmers, if any?
+
+  # --- food and alcohol -------------------------------------------------------
+  food_to_public:
+    type: bool
+    question: Will food or drink be sold or given away to the public?
+  nonprofit_donated_food_only:
+    type: bool
+    question: Is the host a nonprofit serving only food donated by permitted food facilities?
+  food_trucks:
+    type: bool
+    question: Will food trucks participate?
+  farmers_market_operator:
+    type: enum
+    values: [certified_producer, nonprofit, government, other]
+    question: Who operates the farmers market?
+  alcohol_served:
+    type: bool
+    question: Will alcohol be served or sold?
+  alcohol_free_of_charge:
+    type: bool
+    question: Is the alcohol free, with no charge, donation or door fee tied to it?
+  free_admission:
+    type: bool
+    question: Is admission free?
+  licensed_premises:
+    type: bool
+    question: Is the event at a restaurant, bar, winery or brewery?
+  venue_serves_under_own_license:
+    type: bool
+    question: Will a licensed venue serve alcohol under its own existing license?
+
+  # --- fire and structures ----------------------------------------------------
+  tent_max_sqft:
+    type: number
+    question: What is the floor area of the largest tent or membrane structure (sq ft)?
+  tent_occupant_load:
+    type: int
+    question: What is the largest occupant load of any tent?
+  canopy_total_sqft:
+    type: number
+    question: What is the combined area of open-sided canopies (sq ft)?
+  canopy_firebreaks_12ft:
+    type: bool
+    question: Are canopies separated by 12 ft fire breaks and kept 12 ft from structures and tents?
+  cooking_fuel_or_open_flame:
+    type: bool
+    question: Will anyone cook or heat with propane, butane, charcoal, wood, open flame, or deep fryers?
+  generator_gasoline_gal:
+    type: number
+    question: Largest portable generator gasoline capacity (gallons)?
+  generator_diesel_gal:
+    type: number
+    question: Largest portable generator diesel capacity (gallons)?
+  inflatables_flame_effects_or_flammable_liquids:
+    type: bool
+    question: Any air-inflated structures, flame effects, or flammable/combustible liquids?
+  temporary_structures_or_construction:
+    type: bool
+    question: Any stages, bleachers, or construction/build-out of the space?
+  venue_has_adequate_place_of_assembly:
+    type: bool
+    question: Does the venue already hold a Place of Assembly permit with enough occupant load?
+
+# ===========================================================================
+# MACROS
+# ===========================================================================
+macros:
+  in_scope:
+    fact: event_type
+    op: not_in
+    value: [parade, march_or_protest, film_production]
+
+  city_land:
+    all:
+      - {macro: in_scope}
+      - {fact: location, op: not_in, value: [federal_nps, federal_presidio_trust]}
+
+  city_public_property:
+    all:
+      - {macro: in_scope}
+      - {fact: location, op: in, value: [street_or_sidewalk, city_park, port, treasure_island]}
+
+  indoor_setting:
+    all:
+      - {macro: in_scope}
+      - any:
+          - {fact: location, op: eq, value: commercial_indoor}
+          - all:
+              - {fact: location, op: in, value: [port, treasure_island]}
+              - {fact: indoors, op: eq, value: true}
+
+  outdoor_setting:
+    all:
+      - {macro: in_scope}
+      - any:
+          - {fact: location, op: in, value: [commercial_outdoor, street_or_sidewalk]}
+          - all:
+              - {fact: location, op: in, value: [port, treasure_island]}
+              - {fact: indoors, op: eq, value: false}
+
+  one_time_street_closure:
+    all:
+      - {macro: in_scope}
+      - {fact: location, op: eq, value: street_or_sidewalk}
+      - {fact: closes_street, op: eq, value: true}
+      - {fact: recurring_closure, op: eq, value: false}
+
+  block_party_eligible:
+    all:
+      - {macro: one_time_street_closure}
+      - {fact: host_is_block_resident, op: eq, value: true}
+      - {fact: blocks_closed, op: eq, value: 1}
+      - {fact: residential_street, op: eq, value: true}
+      - {fact: affects_muni, op: eq, value: false}
+      - {fact: sells_goods_or_services, op: eq, value: false}
+      - {fact: promotes_business, op: eq, value: false}
+      - {fact: duration_hours, op: lte, value: 8}
+      - {fact: within_7am_10pm, op: eq, value: true}
+
+  admin_review_eligible:
+    all:
+      - {fact: blocks_closed, op: lte, value: 3}
+      - {fact: closes_intersections, op: eq, value: false}
+      - {fact: affects_muni, op: eq, value: false}
+
+  park_code_7_03_trigger:
+    any:
+      - {fact: peak_attendance, op: gte, value: 25}
+      - {fact: amplified_sound, op: eq, value: true}
+      - {fact: food_to_public, op: eq, value: true}
+      - all:
+          - {fact: is_concert, op: eq, value: true}
+          - any:
+              - {fact: publicized_hours_ahead, op: gte, value: 4}
+              - {fact: has_band, op: eq, value: true}
+      - all:
+          - {fact: is_race, op: eq, value: true}
+          - {fact: race_participants, op: gte, value: 25}
+
+  ec_outdoor_extended:
+    any:
+      - {fact: amplified_hours_per_day, op: gt, value: 6}
+      - {fact: amplified_outside_9am_10pm, op: eq, value: true}
+      - {fact: entertainment_days_per_year_at_location, op: gt, value: 12}
+
+# ===========================================================================
+# GROUPS
+# ===========================================================================
+groups:
+  # Permission to use the land. Other City permits need this first.
+  property_permission:
+    - owner_permission
+    - planning_temporary_use_authorization
+    - dpw_sidewalk_occupancy
+    - shared_spaces_permit
+    - sfmta_block_party_closure
+    - sfmta_special_event_closure
+    - rpd_special_event_permit
+    - port_special_event_license
+    - tida_use_permit
+
+# ===========================================================================
+# SECTIONS
+# One diagram each. `entry` is the condition that routes an event into the
+# section on the overview diagram; a rule's own `when` still decides whether
+# it applies. Section 00 is the overview itself and has no entry.
+# ===========================================================================
+sections:
+  "00":
+    title: Overview
+  "01":
+    title: Private residence
+    entry:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: private_residence}
+  "02":
+    title: Private commercial property
+    entry:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: in, value: [commercial_indoor, commercial_outdoor]}
+  "03":
+    title: Private commercial outdoor space
+    entry:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: commercial_outdoor}
+  "04":
+    title: Street or sidewalk
+    entry:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: street_or_sidewalk}
+  "05":
+    title: City park
+    entry:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: city_park}
+  "06":
+    title: Port and Treasure Island
+    entry:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: in, value: [port, treasure_island]}
+  "07":
+    title: Federal land
+    entry:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: in, value: [federal_nps, federal_presidio_trust]}
+  "08a":
+    title: Food and drink
+    entry: {macro: in_scope}
+  "08b":
+    title: Alcohol
+    entry: {macro: in_scope}
+  "08c":
+    title: Fire and structures
+    entry: {macro: city_land}
+  "08d":
+    title: Crowd size
+    entry: {macro: city_land}
+
+# ===========================================================================
+# SOURCES
+# ===========================================================================
+sources:
+  sfgov_event_topic:
+    title: Host an outdoor special event in San Francisco
+    publisher: SF.gov
+    url: https://www.sf.gov/topics--event-permitting
+  sfgov_check_permits:
+    title: Check to see which permits you need for your event
+    publisher: SF.gov (PermitSF)
+    url: https://www.sf.gov/check-to-see-which-permits-you-need-for-your-event
+  sfgov_where_to_apply:
+    title: Where to apply for event permits based on location
+    publisher: SF.gov
+    url: https://www.sf.gov/where-to-apply-for-event-permits-based-on-location
+  sfgov_street_guide:
+    title: Guide to hosting a street and sidewalk event
+    publisher: SF.gov
+    url: https://www.sf.gov/guide-hosting-street-and-sidewalk-event
+  sfmta_special_event_closures:
+    title: Special Event Street Closures
+    publisher: SFMTA
+    url: https://www.sfmta.com/permits/special-event-street-closures
+  sfmta_block_party:
+    title: Block Party Street Closure Application
+    publisher: SFMTA
+    url: https://www.sfmta.com/block-party-street-closure-application
+  sfmta_block_party_conditions:
+    title: Neighborhood Block Parties Permit Conditions/Requirements (2022)
+    publisher: SFMTA
+    url: https://www.sfmta.com/sites/default/files/reports-and-documents/2022/08/block_party_permit_conditions.pdf
+  sfgov_fees:
+    title: Fees for special event permitting
+    publisher: SF.gov
+    url: https://www.sf.gov/fees-for-outdoor-special-event-permitting
+  mayor_2026_ordinance:
+    title: Mayor Lurie Signs Legislation To Make It Easier To Throw Block Parties And Neighborhood Events
+    publisher: Office of the Mayor
+    url: https://www.sf.gov/news-mayor-lurie-signs-legislation-to-make-it-easier-to-throw-block-parties-and-neighborhood-events
+  ec_outdoor:
+    title: Get an entertainment permit for your outdoor event
+    publisher: Entertainment Commission
+    url: https://www.sf.gov/get-entertainment-permit-your-outdoor-event
+  ec_indoor:
+    title: Get an entertainment permit for your indoor event
+    publisher: Entertainment Commission
+    url: https://www.sf.gov/get-entertainment-permit-your-indoor-event
+  ec_rules:
+    title: Entertainment rules and notices (links Police Code Art. 29, Regulation of Noise)
+    publisher: Entertainment Commission
+    url: https://www.sf.gov/information--entertainment-rules-and-notices
+  osb_popups:
+    title: Guide to hosting temporary events and pop-ups
+    publisher: Office of Small Business
+    url: https://www.sf.gov/guide-hosting-temporary-events-and-pop-ups
+  sffd_bulletin_5_10:
+    title: 5.10 Safety Requirements for Regulated Activities at Outdoor Food and Street Fairs
+    publisher: SF Fire Department
+    url: https://sf-fire.org/510-safety-requirements-regulated-activities-outdoor-food-and-street-fairs
+  sffd_bulletin_2_13:
+    title: 2.13 Submittal Requirements for Temporary Tents and Membrane Structures
+    publisher: SF Fire Department
+    url: https://sf-fire.org/213-submittal-requirements-temporary-tents-and-membrane-structures
+  dph_food_guide:
+    title: Guide to food permits for special events
+    publisher: SF Department of Public Health
+    url: https://www.sf.gov/guide-food-permits-special-events
+  dph_organize_vendors:
+    title: Organize food vendors for a special community event
+    publisher: SF Department of Public Health
+    url: https://www.sf.gov/organize-food-vendors-special-community-event
+  dph_cfm:
+    title: Apply to open or operate a certified farmers' market
+    publisher: SF Department of Public Health
+    url: https://www.sf.gov/apply-open-or-operate-certified-farmers-market
+  health_code_440:
+    title: SF Health Code Sec. 440 (Certified Farmers Market definition)
+    publisher: SF Health Code
+    url: https://codelibrary.amlegal.com/codes/san_francisco/latest/sf_health/0-0-0-1431
+  sfgov_outdoor_alcohol:
+    title: Serve alcohol at your outdoor special event (Filipino-language edition)
+    publisher: SF.gov
+    url: https://www.sf.gov/fil/serve-alcohol-at-your-outdoor-special-event
+  abc_221:
+    title: Form ABC-221 Instructions (Daily Licenses)
+    publisher: California Department of Alcoholic Beverage Control
+    url: https://www.abc.ca.gov/licensing/license-forms/form-abc-221-instructions/
+  san_rafael_abc:
+    title: When is a Daily License required from ABC? (summarizes B&P Code 23399.1)
+    publisher: City of San Rafael
+    url: https://www.cityofsanrafael.org/question/when-is-a-daily-license-required-from-alcohol-beverage-control-abc/
+  park_code_7_03:
+    title: SF Park Code Sec. 7.03, Permits Required
+    publisher: SF Park Code
+    url: https://codelibrary.amlegal.com/codes/san_francisco/latest/sf_park/0-0-0-416
+  rpd_special_events:
+    title: Special Events
+    publisher: SF Recreation and Parks
+    url: https://sfrecpark.org/424/Special-Events
+  rpd_other_provisions:
+    title: Other Required Provisions
+    publisher: SF Recreation and Parks
+    url: https://www.sfrecpark.org/542/Other-Required-Provisions
+  ems_medical_plan:
+    title: Create an event medical plan
+    publisher: SF EMS Agency
+    url: https://www.sf.gov/step-by-step--create-event-medical-plan
+  sfgov_entertainment_zone:
+    title: Create an Entertainment Zone
+    publisher: SF.gov
+    url: https://www.sf.gov/reports--august-2024--create-entertainment-zone
+  nps_goga:
+    title: Special Park Use Permits, Golden Gate National Recreation Area
+    publisher: National Park Service
+    url: https://www.nps.gov/goga/planyourvisit/specialparkuses.htm
+  presidio_trust_reelscout:
+    title: Presidio Trust listing (Special Use Permits)
+    publisher: Reel-Scout (third-party film permit directory)
+    url: https://ca.reel-scout.com/jur_detail_content.aspx?id=1563
+
+# ===========================================================================
+# RULES
+# section = id (or list of ids) from `sections`; mostly the former Mermaid
+# diagram (00-08) the rule came from, with 08 split into 08a-08d
+# ===========================================================================
+rules:
+
+  # ---------------------------------------------------------------- 00 overview
+  - id: out_of_scope_event_type
+    section: "00"
+    kind: out_of_scope
+    title: Parades, marches/protests and film shoots use separate processes
+    when: {not: {macro: in_scope}}
+    notes: >-
+      Parades and marches start with the SFPD district station. Film
+      production needs a film permit (Rec and Park permit if filming in a park).
+    sources: [sfgov_event_topic]
+    confidence: official
+
+  - id: permitsf_intake
+    section: "00"
+    kind: advisory
+    title: Submit the PermitSF pre-application intake form
+    when: {macro: city_land}
+    notes: >-
+      Staff review within about 2 business days and return a personalized
+      checklist of permits and the order to apply. Help:
+      SpecialEventSF@sfgov.org, 628-652-4949.
+    sources: [sfgov_check_permits, sfgov_event_topic]
+    confidence: official
+
+  - id: written_final_approval
+    section: "00"
+    kind: advisory
+    title: Have written final approval from every agency before the event
+    when: {macro: in_scope}
+    notes: >-
+      Incomplete applications are neither approved nor denied and cannot be
+      appealed; the process is complete only on written final approval.
+    sources: [sfgov_event_topic]
+    confidence: official
+
+  # ------------------------------------------------------- 01 private residence
+  - id: residence_private_no_city_permit
+    section: "01"
+    kind: exemption
+    title: Private party at a home generally needs no City event permit
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: private_residence}
+        - {fact: open_to_public, op: eq, value: false}
+        - {fact: sells_goods_or_services, op: eq, value: false}
+        - {fact: closes_street, op: eq, value: false}
+    notes: >-
+      EC entertainment permits exclude private residences (indoor and
+      outdoor). DPH temporary food permits are not needed for private parties.
+      Fire rules for tents, cooking and generators still apply (see 08).
+    sources: [ec_indoor, ec_outdoor, dph_organize_vendors]
+    confidence: official
+
+  - id: residence_public_confirm_zoning
+    section: "01"
+    kind: advisory
+    title: Confirm with Planning that a public or commercial event is allowed at the home
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: private_residence}
+        - any:
+            - {fact: open_to_public, op: eq, value: true}
+            - {fact: sells_goods_or_services, op: eq, value: true}
+    sources: []
+    confidence: editorial
+
+  - id: noise_limits
+    section: "00"
+    kind: requirement
+    title: Follow City noise limits (Police Code Art. 29, Regulation of Noise)
+    when: {macro: city_land}
+    sources: [ec_rules]
+    confidence: official
+
+  # -------------------------------------------- 02/03 private commercial property
+  - id: owner_permission
+    section: "02"
+    kind: document
+    title: Written permission from the property owner or manager
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: in, value: [commercial_indoor, commercial_outdoor]}
+    notes: >-
+      A letter or rental contract. If you are the owner or manager, you
+      confirm that on each application instead.
+    sources: [ec_indoor, ec_outdoor, osb_popups]
+    confidence: official
+
+  - id: planning_temporary_use_authorization
+    section: "02"
+    kind: permit
+    agency: Planning Department
+    title: Temporary Use Authorization
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: in, value: [commercial_indoor, commercial_outdoor]}
+        - {fact: zoning_matches_event_use, op: eq, value: false}
+    requires: [owner_permission]
+    notes: >-
+      The property owner, or the host acting as the owner's agent, applies.
+      Valid 1 day to 2 years; pop-up retail limited to 60 days. The OSB guide
+      describes this for commercial spaces; applying it to outdoor commercial
+      lots is an extension.
+    sources: [osb_popups]
+    confidence: official_scope
+
+  - id: sffd_place_of_assembly
+    section: ["02", "06"]
+    kind: permit
+    agency: SF Fire Department
+    title: Place of Assembly Permit (temporary or permanent)
+    when:
+      all:
+        - {macro: indoor_setting}
+        - {fact: peak_attendance, op: gte, value: 50}
+        - {fact: venue_has_adequate_place_of_assembly, op: eq, value: false}
+    requires: [group:property_permission]
+    notes: >-
+      Apply in person at the Permit Center, 49 South Van Ness. A Fire Watch
+      may be required. Check whether the venue's existing permit covers your
+      occupant load.
+    sources: [ec_indoor, osb_popups]
+    confidence: official
+
+  - id: ec_one_time_indoor
+    section: ["02", "06"]
+    kind: permit
+    agency: Entertainment Commission
+    title: One Time Indoor Entertainment Permit
+    when:
+      all:
+        - {macro: indoor_setting}
+        - {fact: live_entertainment, op: eq, value: true}
+        - not:
+            all:
+              - {fact: venue_has_poe_or_llp, op: eq, value: true}
+              - {fact: within_venue_permitted_hours, op: eq, value: true}
+    requires:
+      - group:property_permission
+      - sffd_place_of_assembly
+      - dph_temporary_food_facility
+      - abc_daily_license
+    fee: {amount_usd: 573, amendment_usd: 394, as_of: 2026-09}
+    lead_time: {min_days: 14, unit: calendar, hard_floor_days: 7}
+    limits: Max 12 days of entertainment per premises per calendar year.
+    notes: >-
+      Not needed for amplified sound only (recorded music, speeches, film).
+      EC needs copies of any required Fire and Health permits. EC may deny
+      applications filed under 7 days before the event.
+    sources: [ec_indoor]
+    confidence: official
+
+  # ------------------------------------------------------ 04 street or sidewalk
+  - id: dpw_sidewalk_occupancy
+    section: "04"
+    kind: permit
+    agency: SF Public Works
+    title: Temporary sidewalk occupancy permit (or existing Cafe Tables and Chairs / Shared Spaces parklet permit)
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: street_or_sidewalk}
+        - {fact: closes_street, op: eq, value: false}
+    sources: [ec_outdoor, osb_popups]
+    confidence: official
+
+  - id: shared_spaces_permit
+    section: "04"
+    kind: permit
+    agency: SFMTA / Shared Spaces
+    title: Shared Spaces Permit for a recurring street closure
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: street_or_sidewalk}
+        - {fact: closes_street, op: eq, value: true}
+        - {fact: recurring_closure, op: eq, value: true}
+    sources: [sfgov_street_guide, sfmta_special_event_closures]
+    confidence: official
+
+  - id: sfmta_block_party_closure
+    section: "04"
+    kind: permit
+    agency: SFMTA
+    title: Neighborhood Block Party Street Closure
+    when: {macro: block_party_eligible}
+    fee: {amount_usd_from: 343, as_of: 2026-09, note: Rate depends on how far in advance you apply}
+    lead_time: {min_days: 30, unit: calendar}
+    notes: >-
+      No sales or business promotion. Bounce houses may not fit narrow
+      streets; they cannot block the emergency access lane. SFMTA discourages
+      No Parking signs for most block parties.
+    sources: [sfmta_block_party, sfmta_special_event_closures, sfgov_fees]
+    confidence: official
+
+  - id: sfmta_special_event_closure
+    section: "04"
+    kind: permit
+    agency: SFMTA (ISCOTT)
+    title: Special Event Street Closure
+    when:
+      all:
+        - {macro: one_time_street_closure}
+        - {not: {macro: block_party_eligible}}
+    lead_time:
+      min_days: 30
+      unit: calendar
+      overrides:
+        - when: {fact: sells_goods_or_services, op: eq, value: true}
+          min_days: 90
+          note: Street fair applications are due 90+ days ahead
+    notes: >-
+      Needs a scaled site plan. Do not contact other departments about
+      permits until the street closure is approved; the ISCOTT process then
+      guides you through the rest. Larger events may need waste, staffing,
+      security and medical plans.
+    sources: [sfgov_street_guide, sfmta_special_event_closures]
+    confidence: official
+
+  - id: iscott_administrative_review
+    section: "04"
+    kind: process_step
+    part_of: sfmta_special_event_closure
+    title: Administrative review, no public hearing
+    when:
+      all:
+        - {rule: sfmta_special_event_closure}
+        - {macro: admin_review_eligible}
+    effective_from: 2026-05-21
+    verify: >-
+      2026-05-21 is when the Mayor signed the ordinance (the Board passed it
+      2026-05-12). The ordinance's operative date was not confirmed.
+    sources: [mayor_2026_ordinance]
+    confidence: official
+
+  - id: iscott_public_hearing
+    section: "04"
+    kind: process_step
+    part_of: sfmta_special_event_closure
+    title: ISCOTT public hearing
+    when:
+      all:
+        - {rule: sfmta_special_event_closure}
+        - {not: {rule: iscott_administrative_review}}
+    notes: >-
+      Post public notices about 10 days before the hearing; permit arrives
+      about 7-10 days after. Before the 2026 ordinance took effect, every
+      special event closure needed a hearing; that falls out of this rule
+      automatically because administrative review isn't in effect then.
+    sources: [sfgov_street_guide, sfmta_special_event_closures, mayor_2026_ordinance]
+    confidence: official
+
+  - id: sfpd_street_fair_staffing
+    section: "04"
+    kind: requirement
+    agency: SF Police Department
+    title: Police staffing may be required for street fairs (Transportation Code 6.6)
+    when:
+      all:
+        - {rule: sfmta_special_event_closure}
+        - {fact: sells_goods_or_services, op: eq, value: true}
+    fee:
+      note: >-
+        Without alcohol, organizers pay 40% of projected SFPD costs, capped at
+        $2,793.49 (rates effective January 2026).
+    sources: [sfgov_fees]
+    confidence: official
+
+  - id: entertainment_zone_event
+    section: "04"
+    kind: permit
+    agency: OEWD Entertainment Zone program
+    title: Entertainment Zone one-day event permit (for each day)
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: street_or_sidewalk}
+        - {fact: in_entertainment_zone, op: eq, value: true}
+        - {fact: ez_to_go_alcohol, op: eq, value: true}
+    requires: [group:property_permission]
+    notes: >-
+      Follow the zone's Management Plan and contact its point person. Zones
+      are active only during ABC-permitted special events.
+    sources: [sfgov_entertainment_zone, sfgov_event_topic]
+    confidence: official
+
+  - id: ec_one_time_outdoor
+    section: ["03", "04", "06"]
+    kind: permit
+    agency: Entertainment Commission
+    title: One Time Outdoor Event Permit
+    when:
+      all:
+        - {macro: outdoor_setting}
+        - any:
+            - {fact: live_entertainment, op: eq, value: true}
+            - {fact: amplified_sound, op: eq, value: true}
+        - {fact: venue_approved_outdoor_entertainment, op: ne, value: true}
+    requires: [group:property_permission]
+    fee:
+      amount_usd: 573
+      amendment_usd: 394
+      as_of: 2026-09
+      note: >-
+        Pick the "Outdoor Entertainment" fee for live performers, or the
+        "Outdoor Amplified Sound" fee for sound with no performer, not both.
+    lead_time:
+      min_days: 14
+      unit: calendar
+      hard_floor_days: 7
+      overrides:
+        - when: {macro: ec_outdoor_extended}
+          min_days: 45
+          note: Over 6 hrs/day, outside 9am-10pm, or 13+ days; a hearing may be required
+    limits: >-
+      Max 6 hours per day, 9am to 10pm; up to 12 days per calendar year per
+      location unless the Commission approves more.
+    notes: >-
+      Covers streets, sidewalks and private commercial property. Not for
+      residential, Rec and Park, state or federal property, or buskers.
+      Conflict: the OSB pop-up guide says up to 23 one-time outdoor events per
+      year; this file follows the EC's own 12-day figure.
+    sources: [ec_outdoor, osb_popups]
+    confidence: official
+
+  # ---------------------------------------------------------------- 05 city park
+  - id: rpd_special_event_permit
+    section: "05"
+    kind: permit
+    agency: Recreation and Park Department
+    title: Rec and Park Special Event Permit
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: city_park}
+        - {macro: park_code_7_03_trigger}
+    notes: >-
+      Park Code 7.03 triggers: gathering of 25+ people; concert publicized 4+
+      hours ahead, amplified, or with a band; selling or providing food
+      (beyond a picnic of 25 or fewer); race with 25+ participants; any
+      amplified sound. No EC permit is needed on RPD property. Cancellation
+      forfeits 25% of facility fees after invoicing, all fees within 30 days.
+    sources: [park_code_7_03, rpd_special_events, ec_outdoor]
+    confidence: official
+
+  - id: rpd_amplified_sound_application
+    section: "05"
+    kind: permit
+    agency: Recreation and Park Department
+    title: Amplified Sound Application
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: city_park}
+        - {fact: amplified_sound, op: eq, value: true}
+    notes: Day and hour limits vary by venue.
+    sources: [rpd_special_events, rpd_other_provisions]
+    confidence: official
+
+  - id: rpd_no_event_permit
+    section: "05"
+    kind: exemption
+    title: No park special event permit; reserve the picnic area, field or facility if the site requires it
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: city_park}
+        - {not: {macro: park_code_7_03_trigger}}
+    sources: [park_code_7_03]
+    confidence: official
+
+  - id: rpd_fenced_beer_garden
+    section: "05"
+    kind: requirement
+    title: Alcohol only inside a fenced beer garden; no glass or cans; precinct police review
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: city_park}
+        - {fact: alcohol_served, op: eq, value: true}
+    sources: [rpd_other_provisions]
+    confidence: official
+
+  - id: rpd_ada_forms
+    section: "05"
+    kind: requirement
+    title: ADA forms for events of 1,000+ participants
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: city_park}
+        - {fact: peak_attendance, op: gte, value: 1000}
+    sources: [rpd_other_provisions]
+    confidence: official
+
+  - id: rpd_transportation_plan
+    section: "05"
+    kind: plan
+    title: Transportation plan for events drawing 5,000+
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: city_park}
+        - {fact: peak_attendance, op: gte, value: 5000}
+    notes: Parking control officers may also be required.
+    sources: [rpd_other_provisions]
+    confidence: official
+
+  # ----------------------------------------------------- 06 Port and Treasure Island
+  - id: port_special_event_license
+    section: "06"
+    kind: license
+    agency: Port of San Francisco
+    title: Port Special Event License
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: port}
+    fee: {note: "Port also takes 5% of concession sales and 25% of ticket sales"}
+    sources: [sfgov_where_to_apply, sfgov_fees]
+    confidence: official
+
+  - id: tida_use_permit
+    section: "06"
+    kind: permit
+    agency: Treasure Island Development Authority
+    title: TIDA Use Permit
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: treasure_island}
+    sources: [sfgov_where_to_apply, sfgov_event_topic]
+    confidence: official
+
+  # ------------------------------------------------------------ 07 federal land
+  - id: nps_special_park_use_permit
+    section: "07"
+    kind: permit
+    agency: National Park Service (GGNRA)
+    title: Special Park Use Permit
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: federal_nps}
+    lead_time: {min_days: 30, unit: calendar, note: "Complex events often 90+ days; applications accepted up to 1 year ahead"}
+    sources: [nps_goga, sfgov_where_to_apply]
+    confidence: official
+
+  - id: presidio_trust_special_use_permit
+    section: "07"
+    kind: permit
+    agency: Presidio Trust
+    title: Special Use Permit
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: eq, value: federal_presidio_trust}
+    lead_time: {min_days: 10, unit: business, note: "From a third-party film directory; confirm for events"}
+    sources: [presidio_trust_reelscout]
+    confidence: secondary
+
+  - id: federal_confirm_other_requirements
+    section: "07"
+    kind: advisory
+    title: Confirm food, alcohol, fire and medical requirements with the federal land manager
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: location, op: in, value: [federal_nps, federal_presidio_trust]}
+    notes: City Entertainment Commission permits do not apply on federal land.
+    sources: [ec_outdoor]
+    confidence: official
+
+  # ----------------------------------------------------------- 08 food and drink
+  - id: sf_certified_farmers_market_permits
+    section: "08a"
+    kind: permit
+    agency: SF DPH (Agriculture Program + Food Safety Program)
+    title: SF agricultural certificate and food safety permit for a Certified Farmers Market
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: event_type, op: eq, value: farmers_market}
+    requires: [group:property_permission, cdfa_certified_farmers_market_certificate]
+    lead_time: {note: "Renew each quarter; submit documents 14+ days before the quarter"}
+    notes: >-
+      Submit a vendor list, site map with each vendor and restroom, restroom
+      verification form, and SF Business Registration Certificate.
+    sources: [dph_cfm]
+    confidence: official
+
+  - id: cdfa_certified_farmers_market_certificate
+    section: "08a"
+    kind: permit
+    agency: California Department of Food and Agriculture
+    title: State Certified Farmers' Market certificate
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: event_type, op: eq, value: farmers_market}
+    notes: Include a map marking agricultural vs non-agricultural vendors.
+    sources: [dph_cfm]
+    confidence: official
+
+  - id: farmers_market_operator_ineligible
+    section: "08a"
+    kind: blocker
+    title: A certified farmers market may only be operated by certified producers, a nonprofit, or a government agency
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: event_type, op: eq, value: farmers_market}
+        - {fact: farmers_market_operator, op: eq, value: other}
+    sources: [health_code_440]
+    confidence: official
+
+  - id: dph_temporary_food_facility
+    section: "08a"
+    kind: permit
+    agency: SF Department of Public Health
+    title: Temporary Food Facility permits (organizer + every vendor)
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: food_to_public, op: eq, value: true}
+        - {fact: event_type, op: ne, value: farmers_market}
+    requires: [group:property_permission]
+    lead_time: {min_days: 14, unit: calendar, hard_floor_days: 7}
+    notes: >-
+      Organizer submits the sponsor application, each vendor's concessionaire
+      application, and a site plan with vendor locations. Vendors may operate
+      no more than 25 days in 90. Not needed for private parties, or corporate
+      events where all attendees are licensed professionals.
+    sources: [dph_organize_vendors, dph_food_guide, sfgov_fees]
+    confidence: official
+
+  - id: dph_nonprofit_donated_food_exemption
+    section: "08a"
+    kind: advisory
+    title: Nonprofit serving only donated food may qualify for an exemption form
+    when:
+      all:
+        - {rule: dph_temporary_food_facility}
+        - {fact: nonprofit_donated_food_only, op: eq, value: true}
+    sources: [sfgov_street_guide, dph_organize_vendors]
+    confidence: official
+
+  - id: dph_mobile_food_concession
+    section: "08a"
+    kind: permit
+    agency: SF Department of Public Health
+    title: Mobile Food Facility concessionaire application for each food truck
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: food_trucks, op: eq, value: true}
+    notes: Trucks without an SF mobile food facility permit pay an extra fee.
+    sources: [dph_food_guide, osb_popups]
+    confidence: official
+
+  # ------------------------------------------------------------- 08 alcohol
+  - id: abc_license_not_required
+    section: "08b"
+    kind: exemption
+    title: No ABC license for a private, free event with free alcohol
+    when:
+      all:
+        - {macro: in_scope}
+        - {fact: alcohol_served, op: eq, value: true}
+        - {fact: open_to_public, op: eq, value: false}
+        - {fact: free_admission, op: eq, value: true}
+        - {fact: alcohol_free_of_charge, op: eq, value: true}
+        - {fact: licensed_premises, op: eq, value: false}
+    notes: California Business and Professions Code 23399.1.
+    sources: [san_rafael_abc]
+    confidence: secondary
+
+  - id: abc_daily_license
+    section: "08b"
+    kind: license
+    agency: California Department of Alcoholic Beverage Control
+    title: One-day ABC license (Form ABC-221 or authorization)
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: alcohol_served, op: eq, value: true}
+        - {fact: venue_serves_under_own_license, op: ne, value: true}
+        - {not: {rule: abc_license_not_required}}
+    requires: [group:property_permission, sfpd_alcohol_approval]
+    lead_time: {min_days: 10, max_days: 30, unit: calendar}
+    notes: >-
+      Daily Special: nonprofits serving beer and wine. Daily General:
+      charitable, civic or religious groups, including spirits. Catering
+      Authorization: hire a caterer with its own license. Event Authorization:
+      a bar or restaurant serving on nearby property. Property owner
+      authorization required. Federal land is excluded here only because
+      diagram 07 defers to the land manager; state ABC law may still apply.
+    sources: [abc_221, sfgov_outdoor_alcohol, ec_indoor]
+    confidence: official
+
+  - id: sfpd_alcohol_approval
+    section: "08b"
+    kind: permit
+    agency: SF Police Department (district station)
+    title: Police district station approval of the liquor license
+    when: {rule: abc_daily_license}
+    requires: [group:property_permission, security_plan]
+    lead_time:
+      unit: calendar
+      overrides:
+        - when: {macro: outdoor_setting}
+          min_days: 90
+          note: Outdoor events submit the liquor application and security plan to SFPD 3+ months ahead
+    notes: SFPD or ABC may add conditions, including security requirements.
+    sources: [sfgov_outdoor_alcohol, abc_221, osb_popups]
+    confidence: official
+
+  # -------------------------------------------------------------- 08 fire
+  - id: sffd_tent_permit
+    section: "08c"
+    kind: permit
+    agency: SF Fire Department
+    title: Tent construction + operational permit (tents over 400 sq ft)
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: tent_max_sqft, op: gt, value: 400}
+    requires: [group:property_permission]
+    lead_time: {min_business_days: 5}
+    notes: Proof of liability insurance required. Tents erected over 180 days fall under the Building Code instead.
+    sources: [sffd_bulletin_5_10, sffd_bulletin_2_13]
+    confidence: official
+
+  - id: sffd_canopy_permit
+    section: "08c"
+    kind: permit
+    agency: SF Fire Department
+    title: Permit for open-sided canopies totaling over 700 sq ft without 12 ft fire breaks
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: canopy_total_sqft, op: gt, value: 700}
+        - {fact: canopy_firebreaks_12ft, op: eq, value: false}
+    requires: [group:property_permission]
+    lead_time: {min_business_days: 5}
+    sources: [sffd_bulletin_5_10]
+    confidence: official
+
+  - id: sffd_tent_site_plan
+    section: "08c"
+    kind: requirement
+    title: Detailed site map and floor plan for any tent with occupant load of 50+
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: tent_occupant_load, op: gte, value: 50}
+    sources: [sffd_bulletin_5_10]
+    confidence: official
+
+  - id: sffd_cooking_permits
+    section: "08c"
+    kind: permit
+    agency: SF Fire Department
+    title: Cooking and open-flame permits (event sponsor + each cooking vendor)
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: cooking_fuel_or_open_flame, op: eq, value: true}
+    requires: [group:property_permission]
+    lead_time: {min_business_days: 5, note: "OSB guide advises filing the sponsor application 14 days ahead"}
+    notes: >-
+      Sponsor files the Supplemental Application for Special Events and Event
+      Sponsor Acknowledgement Receipt and coordinates the on-site inspection.
+      Each cooking vendor files its own application and Vendor
+      Acknowledgement Receipt.
+    sources: [sffd_bulletin_5_10, osb_popups]
+    confidence: official
+
+  - id: sffd_generator_permit
+    section: "08c"
+    kind: permit
+    agency: SF Fire Department
+    title: Separate generator permit
+    when:
+      all:
+        - {macro: city_land}
+        - any:
+            - {fact: generator_gasoline_gal, op: gt, value: 10}
+            - {fact: generator_diesel_gal, op: gt, value: 60}
+    requires: [group:property_permission]
+    lead_time: {min_business_days: 5}
+    sources: [sffd_bulletin_5_10]
+    confidence: official
+
+  - id: sffd_other_operational_permits
+    section: "08c"
+    kind: permit
+    agency: SF Fire Department
+    title: Operational permit for each regulated activity (inflatables, flame effects, flammable liquids)
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: inflatables_flame_effects_or_flammable_liquids, op: eq, value: true}
+    requires: [group:property_permission]
+    sources: [osb_popups]
+    confidence: official
+
+  - id: dbi_sffd_construction_review
+    section: "08c"
+    kind: permit
+    agency: Department of Building Inspection + SF Fire Department
+    title: DBI and SFFD review of temporary structures or construction
+    when:
+      all:
+        - {macro: city_land}
+        - {fact: temporary_structures_or_construction, op: eq, value: true}
+    requires: [group:property_permission]
+    notes: The OSB guide describes this for building out an event space; applying it to stages and bleachers follows the PermitSF intake form's list of temporary structures.
+    sources: [osb_popups, sfgov_check_permits]
+    confidence: official_scope
+
+  # ---------------------------------------------------------- 08 crowd size
+  - id: security_plan
+    section: "08d"
+    kind: plan
+    title: Formal security plan
+    when:
+      all:
+        - {macro: city_land}
+        - any:
+            - {fact: peak_attendance, op: gt, value: 500}
+            - all:
+                - {macro: outdoor_setting}
+                - {rule: abc_daily_license}
+    notes: >-
+      Required over 500 attendees. Outdoor events serving alcohol under a
+      one-day license submit one to SFPD with the liquor application.
+    sources: [sfgov_event_topic, sfgov_outdoor_alcohol]
+    confidence: official
+
+  - id: event_medical_plan
+    section: "08d"
+    kind: plan
+    agency: SF EMS Agency
+    title: Event Medical Plan (EMS Agency Policy 7010)
+    when:
+      all:
+        - {macro: city_land}
+        - any:
+            - {fact: peak_attendance, op: gt, value: 1000}
+            - {fact: swimmers, op: gt, value: 100}
+    fee: {range_usd: [54, 1089], note: Based on peak crowd size}
+    lead_time: {min_days: 30, unit: calendar}
+    notes: A permitting agency can also require one for smaller events.
+    sources: [ems_medical_plan, sfgov_fees]
+    confidence: official
+
+  - id: bottled_water_restriction
+    section: "08d"
+    kind: requirement
+    title: No single-serve bottled water under 1 liter at events over 100 attendees
+    when:
+      all:
+        - {macro: city_public_property}
+        - {fact: peak_attendance, op: gt, value: 100}
+    notes: >-
+      Stated in SFMTA block party permit conditions; applying it to all events
+      on City property is an extension to verify. Also follow SF Environment
+      zero-waste requirements.
+    sources: [sfmta_block_party_conditions]
+    confidence: official_scope
+
+# ===========================================================================
+# SCENARIOS  (expected = rule ids that must apply; permits only need be listed
+#             exhaustively for kinds permit/license/plan)
+# ===========================================================================
+scenarios:
+  - id: block_party_with_dj
+    description: Resident-hosted one-block party on a residential street, DJ, 150 guests, potluck among neighbors
+    as_of: 2026-09-22
+    facts:
+      event_type: general
+      location: street_or_sidewalk
+      open_to_public: false
+      sells_goods_or_services: false
+      promotes_business: false
+      closes_street: true
+      recurring_closure: false
+      blocks_closed: 1
+      closes_intersections: false
+      affects_muni: false
+      residential_street: true
+      host_is_block_resident: true
+      duration_hours: 6
+      within_7am_10pm: true
+      in_entertainment_zone: false
+      live_entertainment: true
+      amplified_sound: true
+      venue_approved_outdoor_entertainment: false
+      amplified_hours_per_day: 4
+      amplified_outside_9am_10pm: false
+      entertainment_days_per_year_at_location: 1
+      peak_attendance: 150
+      food_to_public: false
+      food_trucks: false
+      alcohol_served: false
+      tent_max_sqft: 0
+      tent_occupant_load: 0
+      canopy_total_sqft: 200
+      canopy_firebreaks_12ft: true
+      cooking_fuel_or_open_flame: false
+      generator_gasoline_gal: 0
+      generator_diesel_gal: 0
+      inflatables_flame_effects_or_flammable_liquids: false
+      temporary_structures_or_construction: false
+      swimmers: 0
+    expected_permits: [sfmta_block_party_closure, ec_one_time_outdoor]
+
+  - id: two_block_street_fair_with_beer
+    description: Merchant association street fair, 2 blocks, no intersections or Muni, 2,000 people, food vendors cooking with propane, nonprofit beer garden, band
+    as_of: 2026-09-22
+    facts:
+      event_type: general
+      location: street_or_sidewalk
+      open_to_public: true
+      sells_goods_or_services: true
+      promotes_business: true
+      closes_street: true
+      recurring_closure: false
+      blocks_closed: 2
+      closes_intersections: false
+      affects_muni: false
+      residential_street: false
+      host_is_block_resident: false
+      duration_hours: 10
+      within_7am_10pm: true
+      in_entertainment_zone: false
+      live_entertainment: true
+      amplified_sound: true
+      venue_approved_outdoor_entertainment: false
+      amplified_hours_per_day: 6
+      amplified_outside_9am_10pm: false
+      entertainment_days_per_year_at_location: 1
+      peak_attendance: 2000
+      food_to_public: true
+      nonprofit_donated_food_only: false
+      food_trucks: false
+      alcohol_served: true
+      alcohol_free_of_charge: false
+      free_admission: true
+      licensed_premises: false
+      venue_serves_under_own_license: false
+      tent_max_sqft: 0
+      tent_occupant_load: 0
+      canopy_total_sqft: 2000
+      canopy_firebreaks_12ft: true
+      cooking_fuel_or_open_flame: true
+      generator_gasoline_gal: 5
+      generator_diesel_gal: 0
+      inflatables_flame_effects_or_flammable_liquids: false
+      temporary_structures_or_construction: true
+      swimmers: 0
+    expected_permits:
+      - sfmta_special_event_closure
+      - ec_one_time_outdoor
+      - dph_temporary_food_facility
+      - abc_daily_license
+      - sfpd_alcohol_approval
+      - sffd_cooking_permits
+      - dbi_sffd_construction_review
+      - security_plan
+      - event_medical_plan
+    expected_other: [iscott_administrative_review, sfpd_street_fair_staffing, bottled_water_restriction]
+
+  - id: comedy_popup_in_vacant_storefront
+    description: Ticketed comedy night for 60 people in a vacant retail storefront, beer and wine from a nonprofit
+    as_of: 2026-09-22
+    facts:
+      event_type: general
+      location: commercial_indoor
+      open_to_public: true
+      sells_goods_or_services: true
+      zoning_matches_event_use: false
+      peak_attendance: 60
+      venue_has_adequate_place_of_assembly: false
+      live_entertainment: true
+      amplified_sound: true
+      venue_has_poe_or_llp: false
+      food_to_public: false
+      food_trucks: false
+      alcohol_served: true
+      alcohol_free_of_charge: false
+      free_admission: false
+      licensed_premises: false
+      venue_serves_under_own_license: false
+      tent_max_sqft: 0
+      tent_occupant_load: 0
+      canopy_total_sqft: 0
+      cooking_fuel_or_open_flame: false
+      generator_gasoline_gal: 0
+      generator_diesel_gal: 0
+      inflatables_flame_effects_or_flammable_liquids: false
+      temporary_structures_or_construction: false
+      swimmers: 0
+    expected_permits:
+      - planning_temporary_use_authorization
+      - sffd_place_of_assembly
+      - ec_one_time_indoor
+      - abc_daily_license
+      - sfpd_alcohol_approval
+
+  - id: dolores_park_birthday_picnic
+    description: Picnic for 20 friends in a city park, no speakers, no sales, no alcohol
+    as_of: 2026-09-22
+    facts:
+      event_type: general
+      location: city_park
+      open_to_public: false
+      sells_goods_or_services: false
+      peak_attendance: 20
+      amplified_sound: false
+      live_entertainment: false
+      is_concert: false
+      is_race: false
+      food_to_public: false
+      food_trucks: false
+      alcohol_served: false
+      tent_max_sqft: 0
+      tent_occupant_load: 0
+      canopy_total_sqft: 100
+      canopy_firebreaks_12ft: true
+      cooking_fuel_or_open_flame: false
+      generator_gasoline_gal: 0
+      generator_diesel_gal: 0
+      inflatables_flame_effects_or_flammable_liquids: false
+      temporary_structures_or_construction: false
+      swimmers: 0
+    expected_permits: []
+    expected_other: [rpd_no_event_permit]

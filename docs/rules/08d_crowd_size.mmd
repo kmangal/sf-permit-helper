@@ -1,0 +1,27 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["08d · Crowd size"])
+  n1{"peak_attendance #gt; 500?"}
+  start --> n1
+  n1 -->|yes| r_security_plan
+  n2{{"outdoor_setting?"}}
+  start --> n2
+  n3{"abc_daily_license applies?"}
+  n2 -->|yes| n3
+  n3 -->|yes| r_security_plan
+  n4{"peak_attendance #gt; 1000?"}
+  start --> n4
+  n4 -->|yes| r_event_medical_plan
+  n5{"swimmers #gt; 100?"}
+  start --> n5
+  n5 -->|yes| r_event_medical_plan
+  n6{"location in [street_or_sidewalk, city_park, port, treasure_island]?"}
+  start --> n6
+  n7{"peak_attendance #gt; 100?"}
+  n6 -->|yes| n7
+  n7 -->|yes| r_bottled_water_restriction
+  r_security_plan["Formal security plan<br/><i>security_plan</i>"]:::plan
+  r_event_medical_plan["Event Medical Plan (EMS Agency Policy 7010)<br/><i>event_medical_plan</i>"]:::plan
+  r_bottled_water_restriction["No single-serve bottled water under 1 liter at events over 100 attendees<br/><i>bottled_water_restriction</i>"]:::requirement
+  classDef plan fill:#ede9fe,stroke:#6d28d9,color:#111
+  classDef requirement fill:#fef3c7,stroke:#b45309,color:#111

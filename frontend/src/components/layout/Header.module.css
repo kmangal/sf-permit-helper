@@ -1,0 +1,18 @@
+.bar {
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: var(--navy);
+  color: #ffffff;
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.city { font-weight: 700; font-size: 14px; letter-spacing: .02em; }
+.divider { width: 1px; height: 16px; background: rgba(255, 255, 255, .28); }
+.product { font-size: 14px; color: rgba(255, 255, 255, .85); }
+.actions { display: flex; align-items: center; gap: 22px; font-size: 14px; }
+.back { composes: btn btn-link from global; font-size: 14px; color: rgba(255, 255, 255, .85); }
+.reset { composes: btn btn-link from global; font-size: 14px; color: rgba(255, 255, 255, .6); }
+.accent { height: 3px; flex-shrink: 0; background: var(--gold); }

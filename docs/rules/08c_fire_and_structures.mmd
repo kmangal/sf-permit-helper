@@ -1,0 +1,38 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["08c · Fire and structures"])
+  n1{"tent_max_sqft #gt; 400?"}
+  start --> n1
+  n1 -->|yes| r_sffd_tent_permit
+  n2{"canopy_total_sqft #gt; 700?"}
+  start --> n2
+  n3{"canopy_firebreaks_12ft?"}
+  n2 -->|yes| n3
+  n3 -->|no| r_sffd_canopy_permit
+  n4{"tent_occupant_load ≥ 50?"}
+  start --> n4
+  n4 -->|yes| r_sffd_tent_site_plan
+  n5{"cooking_fuel_or_open_flame?"}
+  start --> n5
+  n5 -->|yes| r_sffd_cooking_permits
+  n6{"generator_gasoline_gal #gt; 10?"}
+  start --> n6
+  n6 -->|yes| r_sffd_generator_permit
+  n7{"generator_diesel_gal #gt; 60?"}
+  start --> n7
+  n7 -->|yes| r_sffd_generator_permit
+  n8{"inflatables_flame_effects_or_flammable_liquids?"}
+  start --> n8
+  n8 -->|yes| r_sffd_other_operational_permits
+  n9{"temporary_structures_or_construction?"}
+  start --> n9
+  n9 -->|yes| r_dbi_sffd_construction_review
+  r_sffd_tent_permit["Tent construction + operational permit (tents over 400 sq ft)<br/><i>sffd_tent_permit</i>"]:::permit
+  r_sffd_canopy_permit["Permit for open-sided canopies totaling over 700 sq ft without 12 ft fire breaks<br/><i>sffd_canopy_permit</i>"]:::permit
+  r_sffd_tent_site_plan["Detailed site map and floor plan for any tent with occupant load of 50+<br/><i>sffd_tent_site_plan</i>"]:::requirement
+  r_sffd_cooking_permits["Cooking and open-flame permits (event sponsor + each cooking vendor)<br/><i>sffd_cooking_permits</i>"]:::permit
+  r_sffd_generator_permit["Separate generator permit<br/><i>sffd_generator_permit</i>"]:::permit
+  r_sffd_other_operational_permits["Operational permit for each regulated activity (inflatables, flame effects, flammable liquids)<br/><i>sffd_other_operational_permits</i>"]:::permit
+  r_dbi_sffd_construction_review["DBI and SFFD review of temporary structures or construction<br/><i>dbi_sffd_construction_review</i>"]:::permit
+  classDef permit fill:#dbeafe,stroke:#1d4ed8,color:#111
+  classDef requirement fill:#fef3c7,stroke:#b45309,color:#111

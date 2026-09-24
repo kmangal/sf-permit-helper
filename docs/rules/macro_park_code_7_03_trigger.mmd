@@ -1,0 +1,27 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["macro · park_code_7_03_trigger"])
+  n1{"peak_attendance ≥ 25?"}
+  start --> n1
+  n1 -->|yes| m_park_code_7_03_trigger
+  n2{"amplified_sound?"}
+  start --> n2
+  n2 -->|yes| m_park_code_7_03_trigger
+  n3{"food_to_public?"}
+  start --> n3
+  n3 -->|yes| m_park_code_7_03_trigger
+  n4{"is_concert?"}
+  start --> n4
+  n5{"publicized_hours_ahead ≥ 4?"}
+  n4 -->|yes| n5
+  n5 -->|yes| m_park_code_7_03_trigger
+  n6{"has_band?"}
+  n4 -->|yes| n6
+  n6 -->|yes| m_park_code_7_03_trigger
+  n7{"is_race?"}
+  start --> n7
+  n8{"race_participants ≥ 25?"}
+  n7 -->|yes| n8
+  n8 -->|yes| m_park_code_7_03_trigger
+  m_park_code_7_03_trigger(["✓ park_code_7_03_trigger"]):::exemption
+  classDef exemption fill:#dcfce7,stroke:#15803d,color:#111

@@ -1,0 +1,53 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["04 · Street or sidewalk"])
+  n1{"closes_street?"}
+  start --> n1
+  n2{"recurring_closure?"}
+  n1 -->|yes| n2
+  n2 -->|yes| r_shared_spaces_permit
+  n3{{"block_party_eligible?"}}
+  n2 -->|no| n3
+  n3 -->|yes| r_sfmta_block_party_closure
+  n3 -->|no| r_sfmta_special_event_closure
+  n1 -->|no| r_dpw_sidewalk_occupancy
+  n4{"in_entertainment_zone?"}
+  start --> n4
+  n5{"ez_to_go_alcohol?"}
+  n4 -->|yes| n5
+  n5 -->|yes| r_entertainment_zone_event
+  n6{"live_entertainment?"}
+  start --> n6
+  n7{"venue_approved_outdoor_entertainment?"}
+  n6 -->|yes| n7
+  n7 -->|no| r_ec_one_time_outdoor
+  n8{"amplified_sound?"}
+  start --> n8
+  n9{"venue_approved_outdoor_entertainment?"}
+  n8 -->|yes| n9
+  n9 -->|no| r_ec_one_time_outdoor
+  n10{{"admin_review_eligible?"}}
+  r_sfmta_special_event_closure -->|then| n10
+  n10 -->|yes| r_iscott_administrative_review
+  n11{"iscott_administrative_review applies?"}
+  r_sfmta_special_event_closure -->|then| n11
+  n11 -->|no| r_iscott_public_hearing
+  n12{"sells_goods_or_services?"}
+  r_sfmta_special_event_closure -->|then| n12
+  n12 -->|yes| r_sfpd_street_fair_staffing
+  r_dpw_sidewalk_occupancy["Temporary sidewalk occupancy permit (or existing Cafe Tables and Chairs / Shared Spaces parklet permit)<br/><i>dpw_sidewalk_occupancy</i>"]:::permit
+  r_shared_spaces_permit["Shared Spaces Permit for a recurring street closure<br/><i>shared_spaces_permit</i>"]:::permit
+  r_sfmta_block_party_closure["Neighborhood Block Party Street Closure<br/><i>sfmta_block_party_closure</i>"]:::permit
+  r_sfmta_special_event_closure["Special Event Street Closure<br/><i>sfmta_special_event_closure</i>"]:::permit
+  r_iscott_administrative_review["Administrative review, no public hearing<br/><i>iscott_administrative_review</i><br/>from 2026-05-21"]:::requirement
+  r_iscott_public_hearing["ISCOTT public hearing<br/><i>iscott_public_hearing</i>"]:::requirement
+  r_sfpd_street_fair_staffing["Police staffing may be required for street fairs (Transportation Code 6.6)<br/><i>sfpd_street_fair_staffing</i>"]:::requirement
+  r_entertainment_zone_event["Entertainment Zone one-day event permit (for each day)<br/><i>entertainment_zone_event</i>"]:::permit
+  r_ec_one_time_outdoor["One Time Outdoor Event Permit<br/><i>ec_one_time_outdoor</i>"]:::permit
+  o_sfmta_special_event_closure_1[/"if sells_goods_or_services = yes: lead time 90 days"/]:::note
+  r_sfmta_special_event_closure -.- o_sfmta_special_event_closure_1
+  o_ec_one_time_outdoor_1[/"if ec_outdoor_extended: lead time 45 days"/]:::note
+  r_ec_one_time_outdoor -.- o_ec_one_time_outdoor_1
+  classDef permit fill:#dbeafe,stroke:#1d4ed8,color:#111
+  classDef requirement fill:#fef3c7,stroke:#b45309,color:#111
+  classDef note fill:#fafafa,stroke:#a3a3a3,color:#111,stroke-dasharray:3 3

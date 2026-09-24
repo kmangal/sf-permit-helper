@@ -1,0 +1,35 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["08a · Food and drink"])
+  n1{"location in [federal_nps, federal_presidio_trust]?"}
+  start --> n1
+  n2{"event_type = farmers_market?"}
+  n1 -->|no| n2
+  n2 -->|yes| r_sf_certified_farmers_market_permits
+  n2 -->|yes| r_cdfa_certified_farmers_market_certificate
+  n3{"food_to_public?"}
+  n1 -->|no| n3
+  n4{"event_type = farmers_market?"}
+  n3 -->|yes| n4
+  n4 -->|no| r_dph_temporary_food_facility
+  n5{"food_trucks?"}
+  n1 -->|no| n5
+  n5 -->|yes| r_dph_mobile_food_concession
+  n6{"event_type = farmers_market?"}
+  start --> n6
+  n7{"farmers_market_operator = other?"}
+  n6 -->|yes| n7
+  n7 -->|yes| r_farmers_market_operator_ineligible
+  n8{"nonprofit_donated_food_only?"}
+  r_dph_temporary_food_facility -->|then| n8
+  n8 -->|yes| r_dph_nonprofit_donated_food_exemption
+  r_sf_certified_farmers_market_permits["SF agricultural certificate and food safety permit for a Certified Farmers Market<br/><i>sf_certified_farmers_market_permits</i>"]:::permit
+  r_cdfa_certified_farmers_market_certificate["State Certified Farmers' Market certificate<br/><i>cdfa_certified_farmers_market_certificate</i>"]:::permit
+  r_farmers_market_operator_ineligible[["A certified farmers market may only be operated by certified producers, a nonprofit, or a government agency<br/><i>farmers_market_operator_ineligible</i>"]]:::stop
+  r_dph_temporary_food_facility["Temporary Food Facility permits (organizer + every vendor)<br/><i>dph_temporary_food_facility</i>"]:::permit
+  r_dph_nonprofit_donated_food_exemption["Nonprofit serving only donated food may qualify for an exemption form<br/><i>dph_nonprofit_donated_food_exemption</i>"]:::advisory
+  r_dph_mobile_food_concession["Mobile Food Facility concessionaire application for each food truck<br/><i>dph_mobile_food_concession</i>"]:::permit
+  r_cdfa_certified_farmers_market_certificate -.->|before| r_sf_certified_farmers_market_permits
+  classDef permit fill:#dbeafe,stroke:#1d4ed8,color:#111
+  classDef advisory fill:#f1f5f9,stroke:#475569,color:#111
+  classDef stop fill:#fee2e2,stroke:#b91c1c,color:#111

@@ -1,0 +1,12 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["macro · admin_review_eligible"])
+  n1{"blocks_closed ≤ 3?"}
+  start --> n1
+  n2{"closes_intersections?"}
+  n1 -->|yes| n2
+  n3{"affects_muni?"}
+  n2 -->|no| n3
+  n3 -->|no| m_admin_review_eligible
+  m_admin_review_eligible(["✓ admin_review_eligible"]):::exemption
+  classDef exemption fill:#dcfce7,stroke:#15803d,color:#111

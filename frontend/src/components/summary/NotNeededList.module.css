@@ -1,0 +1,12 @@
+.list { margin-top: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; }
+.row {
+  composes: a-fade from global;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  animation-delay: calc(var(--i) * 40ms);
+}
+.name { font-size: 14px; color: var(--text-3); }
+.agency { font-size: 13px; color: var(--faint); text-align: right; max-width: 200px; line-height: 1.4; }

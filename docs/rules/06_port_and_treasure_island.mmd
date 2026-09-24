@@ -1,0 +1,42 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["06 · Port and Treasure Island"])
+  n1{"indoors?"}
+  start --> n1
+  n2{"peak_attendance ≥ 50?"}
+  n1 -->|yes| n2
+  n3{"venue_has_adequate_place_of_assembly?"}
+  n2 -->|yes| n3
+  n3 -->|no| r_sffd_place_of_assembly
+  n4{"live_entertainment?"}
+  n1 -->|yes| n4
+  n5{"venue_has_poe_or_llp?"}
+  n4 -->|yes| n5
+  n5 -->|no| r_ec_one_time_indoor
+  n6{"within_venue_permitted_hours?"}
+  n4 -->|yes| n6
+  n6 -->|no| r_ec_one_time_indoor
+  n7{"live_entertainment?"}
+  n1 -->|no| n7
+  n8{"venue_approved_outdoor_entertainment?"}
+  n7 -->|yes| n8
+  n8 -->|no| r_ec_one_time_outdoor
+  n9{"amplified_sound?"}
+  n1 -->|no| n9
+  n10{"venue_approved_outdoor_entertainment?"}
+  n9 -->|yes| n10
+  n10 -->|no| r_ec_one_time_outdoor
+  n11{"location?"}
+  start --> n11
+  n11 -->|port| r_port_special_event_license
+  n11 -->|treasure_island| r_tida_use_permit
+  r_sffd_place_of_assembly["Place of Assembly Permit (temporary or permanent)<br/><i>sffd_place_of_assembly</i>"]:::permit
+  r_ec_one_time_indoor["One Time Indoor Entertainment Permit<br/><i>ec_one_time_indoor</i>"]:::permit
+  r_ec_one_time_outdoor["One Time Outdoor Event Permit<br/><i>ec_one_time_outdoor</i>"]:::permit
+  r_port_special_event_license["Port Special Event License<br/><i>port_special_event_license</i>"]:::permit
+  r_tida_use_permit["TIDA Use Permit<br/><i>tida_use_permit</i>"]:::permit
+  r_sffd_place_of_assembly -.->|before| r_ec_one_time_indoor
+  o_ec_one_time_outdoor_1[/"if ec_outdoor_extended: lead time 45 days"/]:::note
+  r_ec_one_time_outdoor -.- o_ec_one_time_outdoor_1
+  classDef permit fill:#dbeafe,stroke:#1d4ed8,color:#111
+  classDef note fill:#fafafa,stroke:#a3a3a3,color:#111,stroke-dasharray:3 3

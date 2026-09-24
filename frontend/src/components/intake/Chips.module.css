@@ -1,0 +1,13 @@
+.chips { composes: a-fade from global; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 12px; padding-left: 4px; }
+.chip {
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  padding: 5px 9px;
+  transition: background .15s, color .15s;
+}
+.chip:hover { background: var(--blue-tint); color: var(--navy); }

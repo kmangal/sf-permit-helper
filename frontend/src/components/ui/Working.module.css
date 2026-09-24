@@ -1,0 +1,1 @@
+.working { composes: a-fade from global; display: flex; align-items: center; gap: 10px; color: var(--muted); }

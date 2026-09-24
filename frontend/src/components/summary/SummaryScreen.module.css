@@ -1,0 +1,15 @@
+.screen { composes: scroll from global; flex: 1; }
+.page { max-width: 880px; margin: 0 auto; padding: 72px 48px 80px; }
+.event { composes: a-rise from global; font-size: 14px; font-weight: 600; color: var(--text-3); letter-spacing: .02em; margin-bottom: 14px; }
+.head { composes: a-rise from global; margin: 0 0 16px; font-size: 44px; font-weight: 700; letter-spacing: -1.2px; line-height: 1.08; animation-delay: 60ms; }
+.sub { composes: a-rise from global; font-size: 17px; color: var(--text-3); line-height: 1.5; max-width: 620px; margin-bottom: 40px; animation-delay: 120ms; }
+.tail {
+  composes: a-rise from global;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 0 0;
+  animation-delay: calc(400ms + var(--i) * 110ms);
+}
+.toggle { composes: btn btn-link from global; font-size: 14px; color: var(--muted); }
+.fillAll { composes: btn btn-primary from global; font-size: 15px; font-weight: 600; background: var(--navy); border-radius: 10px; padding: 0 22px; height: 46px; }

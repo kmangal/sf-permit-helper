@@ -1,0 +1,11 @@
+.section { composes: a-rise from global; margin-top: 30px; animation-delay: calc(400ms + var(--i) * 110ms); }
+.title { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--text-3); letter-spacing: .02em; }
+.rule { height: 1px; background: var(--navy); }
+.row { display: grid; grid-template-columns: 1fr 200px; gap: 32px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.body { display: flex; flex-direction: column; gap: 4px; }
+.heading { display: flex; align-items: baseline; gap: 10px; }
+.name { font-size: 15px; font-weight: 600; }
+.agency { font-size: 13px; color: var(--muted); }
+.text { font-size: 14px; color: var(--text-2); line-height: 1.5; }
+.meta { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.kind { color: var(--faint); }

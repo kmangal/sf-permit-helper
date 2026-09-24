@@ -1,0 +1,30 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["macro · block_party_eligible"])
+  n1{"event_type in [parade, march_or_protest, film_production]?"}
+  start --> n1
+  n2{"location = street_or_sidewalk?"}
+  n1 -->|no| n2
+  n3{"closes_street?"}
+  n2 -->|yes| n3
+  n4{"recurring_closure?"}
+  n3 -->|yes| n4
+  n5{"host_is_block_resident?"}
+  n4 -->|no| n5
+  n6{"blocks_closed = 1?"}
+  n5 -->|yes| n6
+  n7{"residential_street?"}
+  n6 -->|yes| n7
+  n8{"affects_muni?"}
+  n7 -->|yes| n8
+  n9{"sells_goods_or_services?"}
+  n8 -->|no| n9
+  n10{"promotes_business?"}
+  n9 -->|no| n10
+  n11{"duration_hours ≤ 8?"}
+  n10 -->|no| n11
+  n12{"within_7am_10pm?"}
+  n11 -->|yes| n12
+  n12 -->|yes| m_block_party_eligible
+  m_block_party_eligible(["✓ block_party_eligible"]):::exemption
+  classDef exemption fill:#dcfce7,stroke:#15803d,color:#111

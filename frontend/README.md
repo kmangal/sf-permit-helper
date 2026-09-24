@@ -1,16 +1,46 @@
-# React + Vite
+# SF Permit Navigator frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 19 + TypeScript + Vite. Talks to the FastAPI backend through `/api` (see `docs/API_CONTRACT.md`).
 
-Currently, two official plugins are available:
+```bash
+npm run dev        # port 5173, proxies /api to :8000
+npm run typecheck
+npm run lint
+npm test           # or npm run test:watch
+npm run build
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Layout
 
-## React Compiler
+```
+src/
+  types/api.ts          wire shapes from the API contract
+  lib/                  pure logic, no React
+    api.ts              fetch client, ApiError, NoPdfTemplateError
+    rules.ts            terminal result -> Permit / OtherItem rows
+    summary.ts          summary headline, due lines, site check, fees
+    forms.ts            fillReducer: the form-filling state machine, plus field/pill views
+    ink.ts, exportPdf.ts, format.ts, dates.ts
+  hooks/                state over the lib modules
+    useNavigator.ts     intake chat over /api/navigator
+    useFormFiller.ts    loads specs, steps fillReducer on a timer
+    useInk.ts, useToast.ts, useAlive.ts
+  components/
+    session/            PermitSession: owns shared state, picks the screen
+    intake/             IntakeScreen, ChatMessage, Chips, Composer, Ledger
+    summary/            SummaryScreen, SiteCheckCard, PermitCard, OtherList, NotNeededList
+    filler/             FillerScreen, FormsList, FormToolbar, Paper, PaperField, PenOverlay, Feed, AskBox
+    layout/, ui/        Header; Check, Dots, Working, Toast, Staggered
+  App.tsx               remounts PermitSession on "Start over"
+tests/                  vitest suites, mirroring src/
+  setup.ts              jest-dom matchers, cleanup
+  fixtures.ts           shared wire-shape builders
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Components take plain props and callbacks, so each one renders on its own in a test. Screens don't fetch; hooks do.
 
-## Expanding the Oxlint configuration
+## Styling
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Each component has its own CSS Module (`Foo.module.css`). `src/styles.css` holds only the design tokens (CSS variables), the reset, keyframes, and a few shared classes (`btn`, `scroll`, `a-rise`, …) that modules pull in with `composes: … from global`. Variants use data attributes (`data-tone`, `data-status`) or ARIA state (`aria-pressed`, `aria-current`), not class juggling.
+
+Inline `style` is a lint error. The one exception is `ui/Staggered.tsx`, which sets a `--i` custom property that stylesheets read for staggered animation delays.

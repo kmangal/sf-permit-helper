@@ -1,0 +1,18 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["01 · Private residence"])
+  n1{"open_to_public?"}
+  start --> n1
+  n1 -->|yes| r_residence_public_confirm_zoning
+  n2{"sells_goods_or_services?"}
+  n1 -->|no| n2
+  n3{"closes_street?"}
+  n2 -->|no| n3
+  n3 -->|no| r_residence_private_no_city_permit
+  n4{"sells_goods_or_services?"}
+  start --> n4
+  n4 -->|yes| r_residence_public_confirm_zoning
+  r_residence_private_no_city_permit["Private party at a home generally needs no City event permit<br/><i>residence_private_no_city_permit</i>"]:::exemption
+  r_residence_public_confirm_zoning["Confirm with Planning that a public or commercial event is allowed at the home<br/><i>residence_public_confirm_zoning</i>"]:::advisory
+  classDef exemption fill:#dcfce7,stroke:#15803d,color:#111
+  classDef advisory fill:#f1f5f9,stroke:#475569,color:#111

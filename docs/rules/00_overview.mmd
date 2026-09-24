@@ -1,0 +1,43 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["00 · Overview"])
+  n1{"event_type in [parade, march_or_protest, film_production]?"}
+  start --> n1
+  n1 -->|yes| r_out_of_scope_event_type
+  n2{"location in [federal_nps, federal_presidio_trust]?"}
+  n1 -->|no| n2
+  n2 -->|yes| s_07
+  n2 -->|no| r_permitsf_intake
+  n2 -->|no| r_noise_limits
+  n2 -->|no| s_08c
+  n2 -->|no| s_08d
+  n1 -->|no| r_written_final_approval
+  n3{"location?"}
+  n1 -->|no| n3
+  n3 -->|private_residence| s_01
+  n3 -->|commercial_indoor, commercial_outdoor| s_02
+  n3 -->|commercial_outdoor| s_03
+  n3 -->|street_or_sidewalk| s_04
+  n3 -->|city_park| s_05
+  n3 -->|port, treasure_island| s_06
+  n1 -->|no| s_08a
+  n1 -->|no| s_08b
+  r_out_of_scope_event_type[["Parades, marches/protests and film shoots use separate processes<br/><i>out_of_scope_event_type</i>"]]:::stop
+  r_permitsf_intake["Submit the PermitSF pre-application intake form<br/><i>permitsf_intake</i>"]:::advisory
+  r_written_final_approval["Have written final approval from every agency before the event<br/><i>written_final_approval</i>"]:::advisory
+  r_noise_limits["Follow City noise limits (Police Code Art. 29, Regulation of Noise)<br/><i>noise_limits</i>"]:::requirement
+  s_01(["01 · Private residence"]):::section
+  s_02(["02 · Private commercial property"]):::section
+  s_03(["03 · Private commercial outdoor space"]):::section
+  s_04(["04 · Street or sidewalk"]):::section
+  s_05(["05 · City park"]):::section
+  s_06(["06 · Port and Treasure Island"]):::section
+  s_07(["07 · Federal land"]):::section
+  s_08a(["08a · Food and drink"]):::section
+  s_08b(["08b · Alcohol"]):::section
+  s_08c(["08c · Fire and structures"]):::section
+  s_08d(["08d · Crowd size"]):::section
+  classDef requirement fill:#fef3c7,stroke:#b45309,color:#111
+  classDef advisory fill:#f1f5f9,stroke:#475569,color:#111
+  classDef stop fill:#fee2e2,stroke:#b91c1c,color:#111
+  classDef section fill:#e0f2fe,stroke:#0369a1,color:#111

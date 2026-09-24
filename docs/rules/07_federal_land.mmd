@@ -1,0 +1,13 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["07 · Federal land"])
+  n1{"location?"}
+  start --> n1
+  n1 -->|federal_nps| r_nps_special_park_use_permit
+  n1 -->|federal_presidio_trust| r_presidio_trust_special_use_permit
+  start --> r_federal_confirm_other_requirements
+  r_nps_special_park_use_permit["Special Park Use Permit<br/><i>nps_special_park_use_permit</i>"]:::permit
+  r_presidio_trust_special_use_permit["Special Use Permit<br/><i>presidio_trust_special_use_permit</i>"]:::permit
+  r_federal_confirm_other_requirements["Confirm food, alcohol, fire and medical requirements with the federal land manager<br/><i>federal_confirm_other_requirements</i>"]:::advisory
+  classDef permit fill:#dbeafe,stroke:#1d4ed8,color:#111
+  classDef advisory fill:#f1f5f9,stroke:#475569,color:#111

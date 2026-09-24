@@ -1,0 +1,18 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["03 · Private commercial outdoor space"])
+  n1{"live_entertainment?"}
+  start --> n1
+  n2{"venue_approved_outdoor_entertainment?"}
+  n1 -->|yes| n2
+  n2 -->|no| r_ec_one_time_outdoor
+  n3{"amplified_sound?"}
+  start --> n3
+  n4{"venue_approved_outdoor_entertainment?"}
+  n3 -->|yes| n4
+  n4 -->|no| r_ec_one_time_outdoor
+  r_ec_one_time_outdoor["One Time Outdoor Event Permit<br/><i>ec_one_time_outdoor</i>"]:::permit
+  o_ec_one_time_outdoor_1[/"if ec_outdoor_extended: lead time 45 days"/]:::note
+  r_ec_one_time_outdoor -.- o_ec_one_time_outdoor_1
+  classDef permit fill:#dbeafe,stroke:#1d4ed8,color:#111
+  classDef note fill:#fafafa,stroke:#a3a3a3,color:#111,stroke-dasharray:3 3

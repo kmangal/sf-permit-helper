@@ -1,0 +1,33 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["08b · Alcohol"])
+  n1{"alcohol_served?"}
+  start --> n1
+  n2{"open_to_public?"}
+  n1 -->|yes| n2
+  n3{"free_admission?"}
+  n2 -->|no| n3
+  n4{"alcohol_free_of_charge?"}
+  n3 -->|yes| n4
+  n5{"licensed_premises?"}
+  n4 -->|yes| n5
+  n5 -->|no| r_abc_license_not_required
+  n6{"location in [federal_nps, federal_presidio_trust]?"}
+  start --> n6
+  n7{"alcohol_served?"}
+  n6 -->|no| n7
+  n8{"venue_serves_under_own_license?"}
+  n7 -->|yes| n8
+  n9{"abc_license_not_required applies?"}
+  n8 -->|no| n9
+  n9 -->|no| r_abc_daily_license
+  r_abc_daily_license -->|then| r_sfpd_alcohol_approval
+  r_abc_license_not_required["No ABC license for a private, free event with free alcohol<br/><i>abc_license_not_required</i>"]:::exemption
+  r_abc_daily_license["One-day ABC license (Form ABC-221 or authorization)<br/><i>abc_daily_license</i>"]:::permit
+  r_sfpd_alcohol_approval["Police district station approval of the liquor license<br/><i>sfpd_alcohol_approval</i>"]:::permit
+  r_sfpd_alcohol_approval -.->|before| r_abc_daily_license
+  o_sfpd_alcohol_approval_1[/"if outdoor_setting: lead time 90 days"/]:::note
+  r_sfpd_alcohol_approval -.- o_sfpd_alcohol_approval_1
+  classDef permit fill:#dbeafe,stroke:#1d4ed8,color:#111
+  classDef exemption fill:#dcfce7,stroke:#15803d,color:#111
+  classDef note fill:#fafafa,stroke:#a3a3a3,color:#111,stroke-dasharray:3 3

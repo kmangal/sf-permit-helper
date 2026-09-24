@@ -1,0 +1,30 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["02 · Private commercial property"])
+  start --> r_owner_permission
+  n1{"zoning_matches_event_use?"}
+  start --> n1
+  n1 -->|no| r_planning_temporary_use_authorization
+  n2{"location = commercial_indoor?"}
+  start --> n2
+  n3{"peak_attendance ≥ 50?"}
+  n2 -->|yes| n3
+  n4{"venue_has_adequate_place_of_assembly?"}
+  n3 -->|yes| n4
+  n4 -->|no| r_sffd_place_of_assembly
+  n5{"live_entertainment?"}
+  n2 -->|yes| n5
+  n6{"venue_has_poe_or_llp?"}
+  n5 -->|yes| n6
+  n6 -->|no| r_ec_one_time_indoor
+  n7{"within_venue_permitted_hours?"}
+  n5 -->|yes| n7
+  n7 -->|no| r_ec_one_time_indoor
+  r_owner_permission["Written permission from the property owner or manager<br/><i>owner_permission</i>"]:::plan
+  r_planning_temporary_use_authorization["Temporary Use Authorization<br/><i>planning_temporary_use_authorization</i>"]:::permit
+  r_sffd_place_of_assembly["Place of Assembly Permit (temporary or permanent)<br/><i>sffd_place_of_assembly</i>"]:::permit
+  r_ec_one_time_indoor["One Time Indoor Entertainment Permit<br/><i>ec_one_time_indoor</i>"]:::permit
+  r_owner_permission -.->|before| r_planning_temporary_use_authorization
+  r_sffd_place_of_assembly -.->|before| r_ec_one_time_indoor
+  classDef permit fill:#dbeafe,stroke:#1d4ed8,color:#111
+  classDef plan fill:#ede9fe,stroke:#6d28d9,color:#111

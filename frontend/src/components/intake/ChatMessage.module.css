@@ -1,0 +1,39 @@
+.message { composes: a-rise from global; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.message[data-kind="user"] { align-items: flex-end; }
+
+.agent { font-size: 17px; font-weight: 400; color: var(--text-2); line-height: 1.55; max-width: 600px; white-space: pre-line; }
+.lead { font-size: 34px; font-weight: 700; color: var(--ink); line-height: 1.15; letter-spacing: -0.7px; }
+
+.user {
+  font-size: 15.5px;
+  font-weight: 500;
+  color: var(--navy);
+  background: #e6edf8;
+  padding: 10px 14px;
+  border-radius: 12px 12px 3px 12px;
+  max-width: 480px;
+  line-height: 1.45;
+}
+
+.actions { display: flex; flex-direction: column; gap: 7px; padding-left: 2px; }
+.action {
+  composes: a-slide from global;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14.5px;
+  color: var(--text-3);
+  animation-delay: calc(var(--i) * 110ms);
+}
+.tick {
+  composes: a-pop from global;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation-delay: inherit;
+}

@@ -1,0 +1,21 @@
+.field { display: flex; flex-direction: column; gap: 3px; }
+.field[data-span="2"] { grid-column: span 2; }
+.label { font-size: 11px; color: var(--muted); }
+.box {
+  min-height: 26px;
+  border-bottom: 1px solid var(--border-strong);
+  background: transparent;
+  padding: 3px 4px;
+  display: flex;
+  align-items: flex-end;
+  cursor: default;
+  transition: background .15s;
+}
+.box[data-status="filled"] { border-bottom-color: var(--ink); background: #f3f6fb; }
+.box[data-status="waiting"] { border-bottom-color: #e0c072; background: #fdf8ea; }
+.box[data-editing] { border-bottom-color: var(--blue); background: var(--blue-tint); }
+.box[data-editable] { cursor: text; }
+.box[data-editable]:hover { background: var(--blue-wash); }
+.value { composes: a-ink from global; font-size: 13.5px; color: var(--ink); font-weight: 500; line-height: 1.3; }
+.input { width: 100%; border: 0; outline: 0; background: transparent; font-size: 13.5px; font-weight: 500; color: var(--ink); padding: 0; }
+.waiting { font-size: 12px; color: var(--amber); font-weight: 600; }

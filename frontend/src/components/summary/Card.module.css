@@ -1,0 +1,11 @@
+/* The two-column card shared by the site check and each permit. Applied
+   alongside each card's own class in TSX: cross-file `composes` makes Vite warn. */
+.card {
+  composes: a-rise from global;
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 32px;
+  border: 1px solid var(--border-card);
+  border-radius: 12px;
+  background: var(--surface);
+}

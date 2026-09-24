@@ -1,0 +1,18 @@
+.ledger { width: 340px; flex-shrink: 0; padding: 64px 48px 40px 32px; display: flex; flex-direction: column; }
+.head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.title { font-size: 13px; font-weight: 600; color: var(--text-3); letter-spacing: .02em; }
+.meta { font-size: 13px; color: var(--faint); }
+.rule { height: 1px; background: var(--navy); margin-bottom: 4px; }
+.rows { margin: 0; }
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+.label { font-size: 14px; color: var(--muted); flex-shrink: 0; }
+.row[data-pending] .label { color: var(--blue); }
+.value { composes: a-ink from global; margin: 0; font-size: 14px; color: var(--ink); text-align: right; font-weight: 500; line-height: 1.35; }
+.dots { padding: 6px 0; }

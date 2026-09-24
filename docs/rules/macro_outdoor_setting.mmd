@@ -1,0 +1,13 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["macro · outdoor_setting"])
+  n1{"event_type in [parade, march_or_protest, film_production]?"}
+  start --> n1
+  n2{"location?"}
+  n1 -->|no| n2
+  n2 -->|commercial_outdoor, street_or_sidewalk| m_outdoor_setting
+  n3{"indoors?"}
+  n2 -->|port, treasure_island| n3
+  n3 -->|no| m_outdoor_setting
+  m_outdoor_setting(["✓ outdoor_setting"]):::exemption
+  classDef exemption fill:#dcfce7,stroke:#15803d,color:#111

@@ -4,9 +4,8 @@ A web app that helps people identify the permits they need for tasks in San Fran
 
 ## Architecture
 
-- **Backend:** FastAPI (`app.py`) — API-only, no server-side rendering
-- **Frontend:** React + Vite (`frontend/`) — proxies `/api/*` to the backend in dev
-- **Permit database:** `permits.py` — `PermitType` enum (31 types) mapped to `PermitInfo` (name, description, url). Source of truth for all permit types.
+- **Backend:** FastAPI (`backend/app/`) — API-only, no server-side rendering. `main.py` builds the app; every route lives in `routes.py`.
+- **Frontend:** React + TypeScript + Vite (`frontend/`) — proxies `/api/*` to the backend in dev. Layout in `frontend/README.md`
 
 ## Data sources
 
@@ -22,8 +21,9 @@ All Socrata endpoints use `https://data.sf.gov/resource/{id}.json`. No auth requ
 
 ```bash
 # Backend
+cd backend
 source .venv/bin/activate
-uvicorn app:app --reload --port 8000
+uvicorn app.main:app --reload --port 8000
 
 # Frontend (separate terminal)
 cd frontend
@@ -47,9 +47,19 @@ uv pip install -r requirements.txt
 
 # Install frontend deps
 cd frontend && npm install
+
+# Frontend checks (from frontend/)
+npm run typecheck
+npm run lint      # oxlint; inline `style` on DOM elements is an error
+npm test          # vitest + Testing Library
 ```
 
 ## Key API endpoints
 
-- `GET /api/permit-types` — list all 31 permit types
-- `POST /api/permits` — accepts `{"description": "..."}`, returns matching permits (RAG lookup TBD)
+Full contract in `docs/API_CONTRACT.md`.
+
+- `GET /api/intake/schema` — intake questions, in ask order
+- `POST /api/extract` — free text to facts (LLM, with a regex fallback)
+- `POST /api/determine` — facts to permits (deterministic rules engine)
+- `POST /api/forms/{permit_id}/spec`, `/pdf`, `/sent` — form fields, filled PDF, sent record
+- `POST /api/navigator`, `/api/navigator/{session_id}` — conversational navigator: jev answers from the description, the rules engine picks questions. The frontend chat runs on this; `/extract` and `/determine` are no longer called by it

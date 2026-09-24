@@ -1,0 +1,7 @@
+.screen { flex: 1; display: flex; min-width: 0; }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.transcript { composes: scroll from global; flex: 1; padding: 64px 0 24px; }
+.column { width: 100%; max-width: 720px; margin: 0 auto; padding: 0 48px; }
+.messages { display: flex; flex-direction: column; gap: 26px; }
+.thinking { font-size: 14.5px; }
+.footer { padding: 8px 0 36px; }

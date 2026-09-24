@@ -1,0 +1,29 @@
+%% Generated from backend/app/rules/sf_event_permits.yaml by `python -m app.engine.diagrams`. Do not edit.
+flowchart TD
+  start(["05 · City park"])
+  n1{{"park_code_7_03_trigger?"}}
+  start --> n1
+  n1 -->|yes| r_rpd_special_event_permit
+  n1 -->|no| r_rpd_no_event_permit
+  n2{"amplified_sound?"}
+  start --> n2
+  n2 -->|yes| r_rpd_amplified_sound_application
+  n3{"alcohol_served?"}
+  start --> n3
+  n3 -->|yes| r_rpd_fenced_beer_garden
+  n4{"peak_attendance ≥ 1000?"}
+  start --> n4
+  n4 -->|yes| r_rpd_ada_forms
+  n5{"peak_attendance ≥ 5000?"}
+  start --> n5
+  n5 -->|yes| r_rpd_transportation_plan
+  r_rpd_special_event_permit["Rec and Park Special Event Permit<br/><i>rpd_special_event_permit</i>"]:::permit
+  r_rpd_amplified_sound_application["Amplified Sound Application<br/><i>rpd_amplified_sound_application</i>"]:::permit
+  r_rpd_no_event_permit["No park special event permit; reserve the picnic area, field or facility if the site requires it<br/><i>rpd_no_event_permit</i>"]:::exemption
+  r_rpd_fenced_beer_garden["Alcohol only inside a fenced beer garden; no glass or cans; precinct police review<br/><i>rpd_fenced_beer_garden</i>"]:::requirement
+  r_rpd_ada_forms["ADA forms for events of 1,000+ participants<br/><i>rpd_ada_forms</i>"]:::requirement
+  r_rpd_transportation_plan["Transportation plan for events drawing 5,000+<br/><i>rpd_transportation_plan</i>"]:::plan
+  classDef permit fill:#dbeafe,stroke:#1d4ed8,color:#111
+  classDef plan fill:#ede9fe,stroke:#6d28d9,color:#111
+  classDef requirement fill:#fef3c7,stroke:#b45309,color:#111
+  classDef exemption fill:#dcfce7,stroke:#15803d,color:#111
