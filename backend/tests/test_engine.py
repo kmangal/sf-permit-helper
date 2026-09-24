@@ -81,6 +81,47 @@ def test_bad_files_are_rejected(old, new, message):
         loads(MINIMAL.replace(old, new))
 
 
+FEE = MINIMAL.replace("sections:", "sources:\n  s: {title: S, publisher: P, url: u}\nsections:") + (
+    "    sources: [s]\n"
+    "    fee:\n"
+    "      range_usd: [58, 250]\n"
+    "      note: $122 if 60-89 days ahead\n"
+    "      source: s\n"
+    '      quote: "90 days or more $58.00 60-89 days $122.00 30-59 days $250.00"\n'
+    "      fetched_on: 2026-09-23\n"
+)
+
+
+def test_fee_with_quoted_figures_loads():
+    fee = loads(FEE).by_id["r1"].fee
+    assert fee is not None and fee.range_usd == (58, 250)
+
+
+@pytest.mark.parametrize(
+    ("old", "new", "message"),
+    [
+        ("[58, 250]", "[58, 251]", "251 is in neither its quote"),
+        ("$122 if", "$120 if", "120 is in neither its quote"),
+        ("$58.00", "$580.00", "58 is in neither its quote"),
+        ("      source: s", "      source: t", "not in the rule's sources"),
+        ("[58, 250]", "[250, 58]", "low to high"),
+        ("range_usd: [58, 250]", "range_usd: [58, 250]\n      amount_usd: 58", "one of"),
+        ("      fetched_on: 2026-09-23\n", "", "fetched_on"),
+    ],
+)
+def test_bad_fees_are_rejected(old, new, message):
+    with pytest.raises(ValueError, match=message):
+        loads(FEE.replace(old, new))
+
+
+def test_derived_figures_load():
+    text = FEE.replace("[58, 250]", "[58, 308]").replace(
+        "      source: s", '      derived: "308 = 58 + 250"\n      source: s'
+    )
+    fee = loads(text).by_id["r1"].fee
+    assert fee is not None and fee.range_usd == (58, 308)
+
+
 def test_requires_cycle_is_rejected():
     text = MINIMAL + (
         "    requires: [r2]\n"

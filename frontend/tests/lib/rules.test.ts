@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rule, terminal } from "../fixtures.ts";
+import { fee, rule, terminal } from "../fixtures.ts";
 import { blockingRule, feeText, feeTotal, leadText, toOthers, toPermits } from "../../src/lib/rules.ts";
 
 describe("leadText", () => {
@@ -17,21 +17,21 @@ describe("leadText", () => {
 
 describe("feeText", () => {
   it("formats amounts, floors, ranges and notes", () => {
-    expect(feeText({ amount_usd: 1433 })).toBe("$1,433");
-    expect(feeText({ amount_usd_from: 50 })).toBe("From $50");
-    expect(feeText({ range_usd: [10, 20], note: "Per vendor" })).toBe("$10 to $20. Per vendor");
-    expect(feeText({ note: "Free for nonprofits" })).toBe("Free for nonprofits");
+    expect(feeText(fee({ amount_usd: 1433 }))).toBe("$1,433");
+    expect(feeText(fee({ amount_usd_from: 50 }))).toBe("From $50");
+    expect(feeText(fee({ range_usd: [10, 20], note: "Per vendor" }))).toBe("$10 to $20. Per vendor");
+    expect(feeText(fee({ note: "Free for nonprofits" }))).toBe("Free for nonprofits");
     expect(feeText(null)).toBe("No fee listed");
   });
 });
 
 describe("feeTotal", () => {
   it("sums fixed fees and flags variable ones", () => {
-    expect(feeTotal([rule({ fee: { amount_usd: 100 } }), rule({ fee: null })])).toEqual({
+    expect(feeTotal([rule({ fee: fee({ amount_usd: 100 }) }), rule({ fee: null })])).toEqual({
       cents: 10000,
       varies: false,
     });
-    expect(feeTotal([rule({ fee: { amount_usd: 100 } }), rule({ fee: { range_usd: [5, 9] } })])).toEqual({
+    expect(feeTotal([rule({ fee: fee({ amount_usd: 100 }) }), rule({ fee: fee({ range_usd: [5, 9] }) })])).toEqual({
       cents: 10500,
       varies: true,
     });

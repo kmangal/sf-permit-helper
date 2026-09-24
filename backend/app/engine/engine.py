@@ -222,7 +222,9 @@ def _rule_result(rule: Rule, env: _FactEnv) -> dict:
         "confidence": rule.confidence,
         "sources": list(rule.sources),
     }
-    for key in ("fee", "limits", "notes", "verify", "part_of"):
+    if rule.fee:
+        out["fee"] = rule.fee.model_dump(mode="json", exclude_none=True)
+    for key in ("limits", "notes", "verify", "part_of"):
         value = getattr(rule, key)
         if value is not None:
             out[key] = value

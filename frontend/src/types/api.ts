@@ -38,7 +38,15 @@ export interface Fee {
   amount_usd?: number;
   amount_usd_from?: number;
   range_usd?: [number, number];
+  amendment_usd?: number;
   note?: string;
+  /** Provenance: a source id, the verbatim quote, and when it was taken. */
+  source: string;
+  quote: string;
+  derived?: string;
+  fetched_on: string;
+  effective_from?: string;
+  effective_to?: string;
 }
 
 /** The rules file's own lead-time shape. */

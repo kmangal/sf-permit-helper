@@ -1,7 +1,7 @@
 // Small, realistic API payloads for tests.
 
 import type { Permit } from "../src/lib/rules.ts";
-import type { KnownFact, QuestionTurn, Rule, TerminalTurn } from "../src/types/api.ts";
+import type { Fee, KnownFact, QuestionTurn, Rule, TerminalTurn } from "../src/types/api.ts";
 
 export const source = {
   id: "sfmta_block_party",
@@ -10,13 +10,18 @@ export const source = {
   url: "https://www.sf.gov/host-a-neighborhood-block-party",
 };
 
+/** A fee with placeholder provenance; pass only the shape under test. */
+export function fee(shape: Partial<Fee> = {}): Fee {
+  return { source: "sfgov_fees", quote: "", fetched_on: "2026-09-23", ...shape };
+}
+
 export function rule(overrides: Partial<Rule> = {}): Rule {
   return {
     id: "sfmta_closure",
     kind: "permit",
     title: "Street closure",
     agency: "SFMTA",
-    fee: { amount_usd: 122 },
+    fee: fee({ amount_usd: 122 }),
     lead_time: { min_days: 30 },
     notes: "Closes your block to traffic.",
     limits: null,

@@ -6,6 +6,7 @@ references and `requires` have no cycles. A bad file fails at load, not
 halfway through someone's intake.
 """
 
+import re
 from datetime import date
 from functools import cached_property
 from graphlib import CycleError, TopologicalSorter
@@ -59,6 +60,61 @@ class Source(_Model):
     url: str
 
 
+Money = int | float
+
+
+class Fee(_Model):
+    """A fee as its source states it, with the verbatim quote that backs it.
+
+    One shape at most: `amount_usd` when the fee is a single number,
+    `range_usd` when it depends on something not known yet (lead time, hazard
+    level, nonprofit status), `amount_usd_from` only when the source gives no
+    upper bound. With none of them the fee is note-only.
+    """
+
+    amount_usd: Money | None = None
+    amount_usd_from: Money | None = None
+    range_usd: tuple[Money, Money] | None = None
+    amendment_usd: Money | None = None
+    note: str | None = None
+    source: str
+    quote: str
+    derived: str | None = None
+    fetched_on: date
+    effective_from: date | None = None
+    effective_to: date | None = None
+
+    @model_validator(mode="after")
+    def _check_shape(self) -> "Fee":
+        shapes = (self.amount_usd, self.amount_usd_from, self.range_usd)
+        if sum(s is not None for s in shapes) > 1:
+            raise ValueError("fee takes one of amount_usd, amount_usd_from, range_usd")
+        if self.range_usd and self.range_usd[0] >= self.range_usd[1]:
+            raise ValueError("fee range_usd must run low to high")
+        return self
+
+    def figures(self) -> list[Money]:
+        """Every dollar figure the fee states, in its fields and its note."""
+        out = [
+            n for n in (self.amount_usd, self.amount_usd_from, self.amendment_usd) if n is not None
+        ]
+        out.extend(self.range_usd or ())
+        for m in _DOLLARS.findall(self.note or ""):
+            n = float(m.replace(",", ""))
+            out.append(int(n) if n.is_integer() else n)
+        return [n for n in out if n]
+
+
+_DOLLARS = re.compile(r"\$(\d[\d,]*(?:\.\d\d)?)")
+
+
+def _quoted(n: Money, quote: str) -> bool:
+    """True if `quote` states `n` as a figure ("586", "$1,331.00", "5,494.07")."""
+    text = f"{n:,.2f}".removesuffix(".00")
+    pattern = rf"(?<![\d,.]){re.escape(text)}(?:\.00)?(?![\d,]|\.\d)"
+    return re.search(pattern, quote) is not None
+
+
 class Override(_Model):
     model_config = ConfigDict(extra="allow", arbitrary_types_allowed=True, frozen=True)
     when: Condition
@@ -84,7 +140,7 @@ class Rule(_Model):
     when: Condition | None = None
     requires: tuple[str, ...] = ()
     part_of: str | None = None
-    fee: dict | None = None
+    fee: Fee | None = None
     lead_time: LeadTime | None = None
     limits: str | None = None
     notes: str | None = None
@@ -179,6 +235,8 @@ class RuleSet(_Model):
             errors.extend(
                 f"{where}: unknown source {s!r}" for s in r.sources if s not in self.sources
             )
+            if r.fee:
+                errors.extend(f"{where}: {e}" for e in self._check_fee(r, r.fee))
             if r.part_of and r.part_of not in rule_ids:
                 errors.append(f"{where}: unknown part_of {r.part_of!r}")
             for ref in r.requires:
@@ -226,6 +284,15 @@ class RuleSet(_Model):
         if a.op in ("gt", "gte", "lt", "lte") and fact.type not in ("int", "number"):
             return [f"{a.fact} {a.op} on non-numeric fact"]
         return [f"bad value {v!r} for {a.fact}" for v in values if not self._fits(fact, v)]
+
+    def _check_fee(self, rule: Rule, fee: Fee) -> list[str]:
+        if fee.source not in rule.sources:
+            return [f"fee source {fee.source!r} is not in the rule's sources"]
+        return [
+            f"fee figure {n:,} is in neither its quote nor `derived`"
+            for n in fee.figures()
+            if not (_quoted(n, fee.quote) or _quoted(n, fee.derived or ""))
+        ]
 
     def _check_cycles(self) -> None:
         # Macros and rule references share one graph: a rule's `when` may name

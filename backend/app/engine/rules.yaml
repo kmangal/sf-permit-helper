@@ -35,6 +35,23 @@
 #   effective_from / effective_to (inclusive, ISO dates; null = open-ended).
 #   A rule outside its window is treated as not existing on the as-of date.
 #
+# FEES
+#   Shape, at most one of:
+#     amount_usd: N         the fee is one number
+#     range_usd: [lo, hi]   it depends on something not known yet (lead
+#                           time, hazard level, nonprofit status)
+#     amount_usd_from: N    the source gives no upper bound
+#   Or none, for a note-only fee. Every fee carries its provenance:
+#     source         a source id that is also in the rule's `sources`
+#     quote          verbatim text from that source (whitespace collapsed)
+#     fetched_on     when the quote was taken
+#     derived        optional; the arithmetic behind any figure that is not
+#                    in the quote itself (e.g. "531 = 436 + 95")
+#     effective_from / effective_to   the fee period, if the source states one
+#   Loading fails if any dollar figure in the fee (fields or note) is in
+#   neither its quote nor `derived`. To re-audit, re-fetch each source and
+#   search for the quote.
+#
 # CONFIDENCE
 #   official        stated by the issuing agency or in code
 #   official_scope  official source, but it was written for a narrower
@@ -505,6 +522,14 @@ sources:
     title: Create an event medical plan
     publisher: SF EMS Agency
     url: https://www.sf.gov/step-by-step--create-event-medical-plan
+  ems_fee_memo_fy27:
+    title: EMS Agency Fee Schedule for Fiscal Year 2026-2027 (memo, June 9, 2026)
+    publisher: SF EMS Agency
+    url: https://media.api.sf.gov/documents/Fee_Increase_26-27_Memo_6-9-2026.pdf
+  port_special_events:
+    title: Guidelines for Special Events (updated 11-03-2023)
+    publisher: Port of San Francisco
+    url: https://www.sfport.com/files/2024-01/Fillable%20PDF%20Guideline%20for%20Special%20Events%20(updated%2011-03-2023).pdf
   sfgov_entertainment_zone:
     title: Create an Entertainment Zone
     publisher: SF.gov
@@ -671,7 +696,12 @@ rules:
       - sffd_place_of_assembly
       - dph_temporary_food_facility
       - abc_daily_license
-    fee: {amount_usd: 573, amendment_usd: 394, as_of: 2026-09}
+    fee:
+      amount_usd: 586
+      amendment_usd: 403
+      source: ec_indoor
+      quote: "Cost $586 Amendment Fee: $403.00"
+      fetched_on: 2026-09-23
     lead_time: {min_days: 14, unit: calendar, hard_floor_days: 7}
     limits: Max 12 days of entertainment per premises per calendar year.
     notes: >-
@@ -715,7 +745,17 @@ rules:
     agency: SFMTA
     title: Neighborhood Block Party Street Closure
     when: {macro: block_party_eligible}
-    fee: {amount_usd_from: 343, as_of: 2026-09, note: Rate depends on how far in advance you apply}
+    fee:
+      range_usd: [58, 250]
+      note: "Depends on how far ahead you apply: $58 at 90+ days, $122 at 60-89 days, $250 at 30-59 days"
+      source: sfgov_fees
+      quote: >-
+        Neighborhood Block Party Days until your event Fee 90 days or more
+        $58.00 60-89 days $122.00 30-59 days $250.00 Fees for July 1,
+        2026-June 30, 2027
+      fetched_on: 2026-09-23
+      effective_from: 2026-07-01
+      effective_to: 2027-06-30
     lead_time: {min_days: 30, unit: calendar}
     notes: >-
       No sales or business promotion. Bounce houses may not fit narrow
@@ -745,7 +785,21 @@ rules:
       permits until the street closure is approved; the ISCOTT process then
       guides you through the rest. Larger events may need waste, staffing,
       security and medical plans.
-    sources: [sfgov_street_guide, sfmta_special_event_closures]
+    fee:
+      range_usd: [166, 2441]
+      note: >-
+        Depends on how far ahead you apply. Small community events pay $166
+        to $333; other events $1,331 to $2,441.
+      source: sfgov_fees
+      quote: >-
+        City street closure Days until your event Regular event Small
+        community event 120 days or more $1,331.00 $166.00 90-120 days
+        $1,665.00 $166.00 60-89 days $1,998.00 $277.00 30-59 days $2,441.00
+        $333.00 Fees for July 1, 2026-June 30, 2027
+      fetched_on: 2026-09-23
+      effective_from: 2026-07-01
+      effective_to: 2027-06-30
+    sources: [sfgov_street_guide, sfmta_special_event_closures, sfgov_fees]
     confidence: official
 
   - id: iscott_administrative_review
@@ -791,9 +845,24 @@ rules:
         - {rule: sfmta_special_event_closure}
         - {fact: sells_goods_or_services, op: eq, value: true}
     fee:
+      range_usd: [0, 21976.28]
       note: >-
-        Without alcohol, organizers pay 40% of projected SFPD costs, capped at
-        $2,793.49 (rates effective January 2026).
+        Only if SFPD staffing is required. With alcohol, organizers pay 100%
+        of projected SFPD costs, capped at $5,494.07 up to 100,000 patrons
+        and $21,976.28 above 250,000. Without alcohol, 40%, capped at
+        $2,793.49.
+      source: sfgov_fees
+      quote: >-
+        For street fairs where alcoholic beverages are served, event
+        organizers are responsible for 100% of the projected Police Department
+        costs incurred, subject to the following caps: Number of patrons Fee
+        cap 0 to 100,000 patrons $5,494.07 100,001 to 250,000 patrons
+        $10,988.14 More than 250,000 patrons $21,976.28 For street fairs where
+        alcoholic beverages are not served, event organizers are responsible
+        for 40% of the projected Police Department costs incurred, subject to
+        a cap of $2,793.49. The rates above are effective January 2026.
+      fetched_on: 2026-09-23
+      effective_from: 2026-01-01
     sources: [sfgov_fees]
     confidence: official
 
@@ -829,12 +898,11 @@ rules:
         - {fact: venue_approved_outdoor_entertainment, op: ne, value: true}
     requires: [group:property_permission]
     fee:
-      amount_usd: 573
-      amendment_usd: 394
-      as_of: 2026-09
-      note: >-
-        Pick the "Outdoor Entertainment" fee for live performers, or the
-        "Outdoor Amplified Sound" fee for sound with no performer, not both.
+      amount_usd: 586
+      amendment_usd: 403
+      source: ec_outdoor
+      quote: "Cost $586 Amendment Fee: $403.00"
+      fetched_on: 2026-09-23
     lead_time:
       min_days: 14
       unit: calendar
@@ -871,7 +939,19 @@ rules:
       (beyond a picnic of 25 or fewer); race with 25+ participants; any
       amplified sound. No EC permit is needed on RPD property. Cancellation
       forfeits 25% of facility fees after invoicing, all fees within 30 days.
-    sources: [park_code_7_03, rpd_special_events, ec_outdoor]
+    fee:
+      amount_usd_from: 85
+      note: >-
+        Non-refundable application fee. Facility rental, concessions (5%
+        minimum of sales), staffing and other park fees depend on the venue
+        and event.
+      source: sfgov_fees
+      quote: >-
+        Special event application $85.00 n/a Non-refundable application fee
+      fetched_on: 2026-09-23
+      effective_from: 2026-01-01
+      effective_to: 2026-12-31
+    sources: [park_code_7_03, rpd_special_events, ec_outdoor, sfgov_fees]
     confidence: official
 
   - id: rpd_amplified_sound_application
@@ -885,7 +965,17 @@ rules:
         - {fact: location, op: eq, value: city_park}
         - {fact: amplified_sound, op: eq, value: true}
     notes: Day and hour limits vary by venue.
-    sources: [rpd_special_events, rpd_other_provisions]
+    fee:
+      range_usd: [103, 743]
+      note: Nonprofits pay $103. A $952 minimum venue fee may also apply.
+      source: sfgov_fees
+      quote: >-
+        Amplified sound permit $743.00 $103.00 Permit fee Venue for amplified
+        sound $952.00 n/a Minimum per venue fee
+      fetched_on: 2026-09-23
+      effective_from: 2026-01-01
+      effective_to: 2026-12-31
+    sources: [rpd_special_events, rpd_other_provisions, sfgov_fees]
     confidence: official
 
   - id: rpd_no_event_permit
@@ -947,8 +1037,19 @@ rules:
       all:
         - {macro: in_scope}
         - {fact: location, op: eq, value: port}
-    fee: {note: "Port also takes 5% of concession sales and 25% of ticket sales"}
-    sources: [sfgov_where_to_apply, sfgov_fees]
+    fee:
+      note: >-
+        The use fee and security deposit vary with the event's type, size and
+        duration. A non-refundable deposit of up to $10,000 may be required to
+        reserve the location.
+      source: port_special_events
+      quote: >-
+        These required coverage amounts and fees will vary according to the
+        type, size and duration of the event. Depending on size and location
+        of the event, a non- refundable deposit of up to $10,000 may be
+        required to reserve the location.
+      fetched_on: 2026-09-23
+    sources: [sfgov_where_to_apply, sfgov_fees, port_special_events]
     confidence: official
 
   - id: tida_use_permit
@@ -1017,6 +1118,15 @@ rules:
     notes: >-
       Submit a vendor list, site map with each vendor and restroom, restroom
       verification form, and SF Business Registration Certificate.
+    fee:
+      note: >-
+        Set by DPH's farmers' market fee worksheet. The agriculture fee is
+        separate; check its fee schedule.
+      source: dph_cfm
+      quote: >-
+        We will tell you how much you owe when you submit your application.
+        Find out what your fee is with the farmers' market fee worksheet
+      fetched_on: 2026-09-23
     sources: [dph_cfm]
     confidence: official
 
@@ -1062,6 +1172,33 @@ rules:
       application, and a site plan with vendor locations. Vendors may operate
       no more than 25 days in 90. Not needed for private parties, or corporate
       events where all attendees are licensed professionals.
+    fee:
+      amount_usd_from: 211
+      note: >-
+        $211 sponsor application, plus for each vendor a $59 (low hazard) or
+        $152 (high hazard) application and an $87 or $134 permit covering 2
+        days. Vendors with an annual permit pay no vendor fee. Filing within
+        14 days of the event adds a 50% late fee.
+      source: sfgov_fees
+      quote: >-
+        Event sponsor permit application $211 per event Review and processing
+        your application Late fee 50% of the application fee Sponsors and
+        vendors are both subject to a late fee for applications submitted
+        within 14 days of an event Fees for July 1, 2026-June 30, 2027 Food
+        vendors Each individual food or beverage vendor must be listed on the
+        TFF permit for the event. Vendors with an existing annual permit won't
+        be charged a fee, but still need to be listed on the permit. The
+        vendor fee is based on the type of product(s) and the duration of the
+        event. High Hazard: cooking, food preparation, food assembling, open
+        food plating, and espresso bars Low Hazard: Pre-packaged food (with or
+        without sampling) and bars Item Food type Fee Food operator
+        application High Hazard $152.00 per vendor application Food operator
+        application Low Hazard $59.00 per vendor application Permit and
+        Inspection High Hazard $134.00 per vendor; good for 2 days Permit and
+        Inspection Low Hazard $87 per vendor; good for 2 days
+      fetched_on: 2026-09-23
+      effective_from: 2026-07-01
+      effective_to: 2027-06-30
     sources: [dph_organize_vendors, dph_food_guide, sfgov_fees]
     confidence: official
 
@@ -1126,6 +1263,14 @@ rules:
       a bar or restaurant serving on nearby property. Property owner
       authorization required. Federal land is excluded here only because
       diagram 07 defers to the land manager; state ABC law may still apply.
+    fee:
+      range_usd: [50, 75]
+      note: Per day. $50 for beer and wine, $75 if spirits are served.
+      source: abc_221
+      quote: >-
+        Beer and Wine $50.00 per day General (includes beer, wine & distilled
+        spirits) $75.00 per day
+      fetched_on: 2026-09-23
     sources: [abc_221, sfgov_outdoor_alcohol, ec_indoor]
     confidence: official
 
@@ -1159,7 +1304,23 @@ rules:
     requires: [group:property_permission]
     lead_time: {min_business_days: 5}
     notes: Proof of liability insurance required. Tents erected over 180 days fall under the Building Code instead.
-    sources: [sffd_bulletin_5_10, sffd_bulletin_2_13]
+    fee:
+      range_usd: [95, 531]
+      note: >-
+        SFFD charges a $436 application fee once per event, plus $95 for each
+        fire-regulated activity. These are the Sept 2025-Aug 2026 fees; the
+        2026-27 fees are not posted yet.
+      derived: "531 = 436 + 95, when this is the event's only fire permit"
+      source: sfgov_fees
+      quote: >-
+        Primary application fee $436.00 per event This is the application fee
+        for your event. Application fee activity add-ons $95.00 per activity
+        You will be charged an additional fee for each activity at your event
+        that impacts fire safety. Fees for September 1, 2025-August 30, 2026
+      fetched_on: 2026-09-23
+      effective_from: 2025-09-01
+      effective_to: 2026-08-30
+    sources: [sffd_bulletin_5_10, sffd_bulletin_2_13, sfgov_fees]
     confidence: official
 
   - id: sffd_canopy_permit
@@ -1174,7 +1335,23 @@ rules:
         - {fact: canopy_firebreaks_12ft, op: eq, value: false}
     requires: [group:property_permission]
     lead_time: {min_business_days: 5}
-    sources: [sffd_bulletin_5_10]
+    fee:
+      range_usd: [95, 531]
+      note: >-
+        SFFD charges a $436 application fee once per event, plus $95 for each
+        fire-regulated activity. These are the Sept 2025-Aug 2026 fees; the
+        2026-27 fees are not posted yet.
+      derived: "531 = 436 + 95, when this is the event's only fire permit"
+      source: sfgov_fees
+      quote: >-
+        Primary application fee $436.00 per event This is the application fee
+        for your event. Application fee activity add-ons $95.00 per activity
+        You will be charged an additional fee for each activity at your event
+        that impacts fire safety. Fees for September 1, 2025-August 30, 2026
+      fetched_on: 2026-09-23
+      effective_from: 2025-09-01
+      effective_to: 2026-08-30
+    sources: [sffd_bulletin_5_10, sfgov_fees]
     confidence: official
 
   - id: sffd_tent_site_plan
@@ -1204,7 +1381,23 @@ rules:
       Sponsor Acknowledgement Receipt and coordinates the on-site inspection.
       Each cooking vendor files its own application and Vendor
       Acknowledgement Receipt.
-    sources: [sffd_bulletin_5_10, osb_popups]
+    fee:
+      range_usd: [95, 531]
+      note: >-
+        SFFD charges a $436 application fee once per event, plus $95 for each
+        fire-regulated activity. These are the Sept 2025-Aug 2026 fees; the
+        2026-27 fees are not posted yet.
+      derived: "531 = 436 + 95, when this is the event's only fire permit"
+      source: sfgov_fees
+      quote: >-
+        Primary application fee $436.00 per event This is the application fee
+        for your event. Application fee activity add-ons $95.00 per activity
+        You will be charged an additional fee for each activity at your event
+        that impacts fire safety. Fees for September 1, 2025-August 30, 2026
+      fetched_on: 2026-09-23
+      effective_from: 2025-09-01
+      effective_to: 2026-08-30
+    sources: [sffd_bulletin_5_10, osb_popups, sfgov_fees]
     confidence: official
 
   - id: sffd_generator_permit
@@ -1220,7 +1413,23 @@ rules:
             - {fact: generator_diesel_gal, op: gt, value: 60}
     requires: [group:property_permission]
     lead_time: {min_business_days: 5}
-    sources: [sffd_bulletin_5_10]
+    fee:
+      range_usd: [95, 531]
+      note: >-
+        SFFD charges a $436 application fee once per event, plus $95 for each
+        fire-regulated activity. These are the Sept 2025-Aug 2026 fees; the
+        2026-27 fees are not posted yet.
+      derived: "531 = 436 + 95, when this is the event's only fire permit"
+      source: sfgov_fees
+      quote: >-
+        Primary application fee $436.00 per event This is the application fee
+        for your event. Application fee activity add-ons $95.00 per activity
+        You will be charged an additional fee for each activity at your event
+        that impacts fire safety. Fees for September 1, 2025-August 30, 2026
+      fetched_on: 2026-09-23
+      effective_from: 2025-09-01
+      effective_to: 2026-08-30
+    sources: [sffd_bulletin_5_10, sfgov_fees]
     confidence: official
 
   - id: sffd_other_operational_permits
@@ -1233,7 +1442,23 @@ rules:
         - {macro: city_land}
         - {fact: inflatables_flame_effects_or_flammable_liquids, op: eq, value: true}
     requires: [group:property_permission]
-    sources: [osb_popups]
+    fee:
+      range_usd: [95, 531]
+      note: >-
+        SFFD charges a $436 application fee once per event, plus $95 for each
+        fire-regulated activity. These are the Sept 2025-Aug 2026 fees; the
+        2026-27 fees are not posted yet.
+      derived: "531 = 436 + 95, when this is the event's only fire permit"
+      source: sfgov_fees
+      quote: >-
+        Primary application fee $436.00 per event This is the application fee
+        for your event. Application fee activity add-ons $95.00 per activity
+        You will be charged an additional fee for each activity at your event
+        that impacts fire safety. Fees for September 1, 2025-August 30, 2026
+      fetched_on: 2026-09-23
+      effective_from: 2025-09-01
+      effective_to: 2026-08-30
+    sources: [osb_popups, sfgov_fees]
     confidence: official
 
   - id: dbi_sffd_construction_review
@@ -1280,10 +1505,23 @@ rules:
         - any:
             - {fact: peak_attendance, op: gt, value: 1000}
             - {fact: swimmers, op: gt, value: 100}
-    fee: {range_usd: [54, 1089], note: Based on peak crowd size}
+    fee:
+      range_usd: [54, 1089]
+      note: >-
+        Based on peak crowd size: $54 under 1,000 people, $163 for
+        1,000-4,999, $544 for 5,000-9,999, $1,089 for 10,000 or more
+      source: ems_fee_memo_fy27
+      quote: >-
+        Event Medical Plan Review Fee 1 to 999 Persons 53.00 54.00 Event
+        Medical Plan Review Fee 1,000 to 4,999 Persons 160.00 163.00 Event
+        Medical Plan Review Fee 5,000 to 9,999 Persons 533.00 544.00 Event
+        Medical Plan Review Fee 10,000 Persons or More 1,065.00 1,089.00
+      fetched_on: 2026-09-23
+      effective_from: 2026-07-01
+      effective_to: 2027-06-30
     lead_time: {min_days: 30, unit: calendar}
     notes: A permitting agency can also require one for smaller events.
-    sources: [ems_medical_plan, sfgov_fees]
+    sources: [ems_medical_plan, sfgov_fees, ems_fee_memo_fy27]
     confidence: official
 
   - id: bottled_water_restriction

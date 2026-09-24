@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { known, permit, rule, terminal } from "../fixtures.ts";
+import { fee, known, permit, rule, terminal } from "../fixtures.ts";
 import { dueLine, feeSummary, permitDue, siteCheck, summaryHead, summarySub } from "../../src/lib/summary.ts";
 
 const NOW = new Date(2026, 8, 1).getTime();
@@ -67,6 +67,6 @@ describe("siteCheck", () => {
 describe("feeSummary", () => {
   it("marks variable totals with a plus", () => {
     expect(feeSummary(terminal()).fixed).toBe("$122");
-    expect(feeSummary(terminal({ rules: [rule({ fee: { amount_usd_from: 50 } })] })).fixed).toBe("$50+");
+    expect(feeSummary(terminal({ rules: [rule({ fee: fee({ amount_usd_from: 50 }) })] })).fixed).toBe("$50+");
   });
 });
