@@ -1,17 +1,85 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc", "vitest"],
+  "plugins": ["react", "typescript", "oxc", "vitest", "import"],
   "rules": {
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "warn",
     "react/only-export-components": ["warn", { "allowConstantExport": true }],
     "react/forbid-dom-props": ["error", { "forbid": ["style"] }],
-    "vitest/require-mock-type-parameters": "off"
+    "vitest/require-mock-type-parameters": "off",
+    "import/no-cycle": "error",
+    "import/no-self-import": "error",
+    "import/no-duplicates": "error"
   },
   "overrides": [
     {
       "files": ["src/components/ui/Staggered.tsx"],
       "rules": { "react/forbid-dom-props": "off" }
+    },
+    {
+      "files": ["src/types/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["react", "react-dom", "react-dom/*", "**/lib/**", "**/hooks/**", "**/components/**"],
+                "message": "types/ holds wire shapes only; it imports nothing from the app."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/lib/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["react", "react-dom", "react-dom/*", "**/hooks/**", "**/components/**"],
+                "message": "lib/ is pure logic: no React, hooks, or components."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/hooks/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/components/**"],
+                "message": "hooks/ sits below components/; move shared code into lib/."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/components/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/lib/api*"],
+                "importNames": ["navigatorStart", "navigatorReply"],
+                "message": "Components don't fetch; call the API from a hook."
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

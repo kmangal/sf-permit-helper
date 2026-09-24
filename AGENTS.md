@@ -42,7 +42,15 @@ cd frontend && npm install
 npm run typecheck
 npm run lint      # oxlint; inline `style` on DOM elements is an error
 npm test          # vitest + Testing Library
+
+# Import layering (from backend/; contracts in .importlinter)
+uv run lint-imports
+
+# All pre-commit hooks (from the repo root)
+uv run --project backend pre-commit run --all-files
 ```
+
+Commit messages must be Conventional Commits (`feat:`, `fix:`, `chore:` …); a commitizen `commit-msg` hook enforces this. See `CONTRIBUTING.md`.
 
 ## Key API endpoints
 

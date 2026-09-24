@@ -4,13 +4,12 @@ version = "0.1.0"
 description = "Helps people identify permits they need for tasks in San Francisco"
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi>=0.115.0",
-    "uvicorn>=0.30.6",
+    "fastapi==0.115.0",
+    "uvicorn==0.30.6",
     "anthropic",
-    "python-dotenv",
-    "pyyaml>=6.0.3",
-    "typesafe-sdk>=0.7.1",
-    "pydantic-settings>=2.15.0",
+    "pyyaml==6.0.3",
+    "typesafe-sdk==0.7.1",
+    "pydantic-settings==2.15.0",
 ]
 
 [tool.ruff]
@@ -25,7 +24,10 @@ python-version = "3.12"
 
 [dependency-groups]
 dev = [
-    "pytest>=9.1.1",
-    "ruff>=0.16.8",
-    "ty>=0.0.83",
+    "commitizen==4.19.0",
+    "import-linter==2.15",
+    "pre-commit==4.6.2",
+    "pytest==9.1.1",
+    "ruff==0.16.8",
+    "ty==0.0.83",
 ]

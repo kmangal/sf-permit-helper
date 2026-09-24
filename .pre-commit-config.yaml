@@ -1,0 +1,67 @@
+# Install once, from the repo root: `uv run --project backend pre-commit install`
+# (see CONTRIBUTING.md).
+# Python tools run through uv and frontend tools through npm, so hook versions
+# always match backend/uv.lock and frontend/package-lock.json.
+default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: detect-private-key
+
+  - repo: local
+    hooks:
+      # Backend
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --project backend ruff format
+        language: system
+        types_or: [python, pyi]
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --project backend ruff check --fix
+        language: system
+        types_or: [python, pyi]
+      - id: ty
+        name: ty check
+        entry: uv run --directory backend ty check
+        language: system
+        files: ^backend/
+        types_or: [python, pyi]
+        pass_filenames: false
+      - id: import-linter
+        name: import-linter
+        entry: uv run --directory backend lint-imports --no-cache
+        language: system
+        files: ^backend/(app/|\.importlinter$)
+        pass_filenames: false
+
+      # Frontend
+      - id: oxlint
+        name: oxlint
+        entry: npm --prefix frontend run lint --silent
+        language: system
+        files: ^frontend/(src/|tests/|\.oxlintrc\.json$)
+        pass_filenames: false
+      - id: tsc
+        name: tsc
+        entry: npm --prefix frontend run typecheck --silent
+        language: system
+        files: ^frontend/(src/|tests/|tsconfig.*\.json$|vite\.config\.ts$)
+        pass_filenames: false
+
+      # Commit message
+      - id: commitizen
+        name: commitizen check
+        entry: uv run --project backend cz check --allow-abort --commit-msg-file
+        language: system
+        stages: [commit-msg]
+        always_run: true
