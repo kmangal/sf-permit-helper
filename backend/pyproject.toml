@@ -2,7 +2,7 @@
 name = "sf-permit-helper"
 version = "0.1.0"
 description = "Helps people identify permits they need for tasks in San Francisco"
-requires-python = "==3.13.1"
+requires-python = "==3.13.7"
 dependencies = [
     "fastapi==0.115.0",
     "uvicorn==0.30.6",
