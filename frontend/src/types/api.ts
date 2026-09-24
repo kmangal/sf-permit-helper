@@ -125,3 +125,18 @@ export interface OffTopicTurn {
 }
 
 export type NavigatorTurn = QuestionTurn | TerminalTurn | AbortedTurn | OffTopicTurn;
+
+// ---------- rules ----------
+
+/** One flowchart of the rules engine, drawn from the live rules file. */
+export interface RuleDiagram {
+  id: string;
+  kind: "overview" | "section" | "macro";
+  title: string;
+  /** Mermaid flowchart source. */
+  source: string;
+}
+
+export interface RuleDiagramsResponse {
+  diagrams: RuleDiagram[];
+}

@@ -63,6 +63,23 @@ Ask about the pending question instead of answering it. An LLM, briefed as an SF
 
 The response is `text/plain; charset=utf-8`, streamed as it is written. It can be empty if the model fails. An unknown or finished session, or one with no pending question, returns 404 `unknown_session`.
 
+## `GET /api/v1/rules/diagrams`
+
+The rules engine as Mermaid flowcharts, drawn from the rules file the server runs on (the same diagrams as `docs/rules/`). The frontend's `/rules` page shows them, one tab each.
+
+```jsonc
+{
+  "diagrams": [
+    { "id": "00_overview", "kind": "overview", "title": "Overview", "source": "flowchart TD\n  ..." },
+    { "id": "04_street_or_sidewalk", "kind": "section", "title": "Street or sidewalk", "source": "..." },
+    { "id": "macro_block_party_eligible", "kind": "macro",   // overview | section | macro
+      "title": "Street closure: qualifies as a block party", "source": "..." }
+  ]
+}
+```
+
+Order is the overview, then each section, then each shared check (macro) big enough to get its own diagram.
+
 ## `GET /api/v1/health`
 
 Returns `{ "status": "ok" }` while the server is up. Railway uses it as the backend's healthcheck.

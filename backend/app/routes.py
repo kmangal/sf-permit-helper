@@ -1,11 +1,14 @@
 """The permit navigator API. Contract: docs/API_CONTRACT.md."""
 
 import uuid
+from functools import cache
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
+from .engine import load_ruleset
+from .engine.diagrams import diagrams
 from .models.jev import OpenRouterJevClient
 from .models.llm import OpenRouterLlmClient
 from .navigator import Navigator, Session
@@ -49,6 +52,20 @@ def _navigator_turn(session_id: str, session: Session, turn: dict) -> dict:
 async def get_health():
     """Liveness check for the deploy platform."""
     return {"status": "ok"}
+
+
+@cache
+def _rule_diagrams() -> list[dict]:
+    return [
+        {"id": d.id, "kind": d.kind, "title": d.title, "source": d.body}
+        for d in diagrams(load_ruleset())
+    ]
+
+
+@router.get("/rules/diagrams")
+async def get_rule_diagrams():
+    """The rules engine's decision flow as Mermaid flowcharts, drawn from the live rules file."""
+    return {"diagrams": _rule_diagrams()}
 
 
 @router.post("/navigator")

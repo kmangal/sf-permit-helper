@@ -31,6 +31,15 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "See an example" })).toBeInTheDocument();
   });
 
+  it("shows a bare not-found page for unknown paths", () => {
+    window.history.pushState(null, "", "/nowhere");
+    render(<App />);
+    expect(screen.getByRole("heading", { name: "Page not found" })).toBeInTheDocument();
+    expect(screen.queryByRole("banner")).not.toBeInTheDocument();
+    expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument();
+    window.history.pushState(null, "", "/");
+  });
+
   it("toasts a failed request", async () => {
     vi.mocked(api.navigatorStart).mockRejectedValue(new Error("Navigator is down."));
     const user = userEvent.setup();

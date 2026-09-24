@@ -8,7 +8,16 @@
   background: var(--blue);
   color: #ffffff;
 }
-.brand { font-weight: 700; font-size: 18px; }
+.brand { font-weight: 700; font-size: 18px; color: inherit; }
+.brand:hover { color: inherit; text-decoration: none; }
 .actions { display: flex; align-items: center; gap: 22px; font-size: 14px; }
+.link { color: rgba(255, 255, 255, .6); }
+.link:hover { color: #ffffff; }
 .reset { composes: btn btn-link from global; font-size: 14px; color: rgba(255, 255, 255, .6); }
 .accent { height: 3px; flex-shrink: 0; background: var(--gold); }
+
+@media (max-width: 760px) {
+  .bar { padding: 0 16px; }
+  .brand { font-size: 15px; }
+  .actions { gap: 14px; font-size: 13px; }
+}

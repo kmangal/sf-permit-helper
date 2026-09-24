@@ -54,6 +54,14 @@ CLASS_DEFS = {
     "section": "fill:#e0f2fe,stroke:#0369a1,color:#111",
     "note": "fill:#fafafa,stroke:#a3a3a3,color:#111,stroke-dasharray:3 3",
 }
+# Names for people browsing the diagrams; other macros fall back to their key.
+MACRO_TITLES = {
+    "admin_review_eligible": "Street closure: eligible for administrative review",
+    "block_party_eligible": "Street closure: qualifies as a block party",
+    "ec_outdoor_extended": "Entertainment: extended outdoor amplified sound",
+    "outdoor_setting": "Is the event outdoors?",
+    "park_code_7_03_trigger": "City park: needs a special event permit (Park Code 7.03)",
+}
 KIND_CLASS = {
     "permit": "permit",
     "license": "permit",
@@ -409,22 +417,47 @@ def _slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
 
 
-def generate(rs: RuleSet) -> dict[str, str]:
-    """{filename: content} for every diagram plus README.md."""
-    files: dict[str, str] = {}
-    sections: list[tuple[str, str, str]] = []  # (heading, filename, source)
+@dataclass(frozen=True)
+class Diagram:
+    """One rendered diagram. `heading` names it in the README; `title` is for people."""
+
+    kind: str  # overview | section | macro
+    heading: str
+    title: str
+    filename: str
+    source: str
+
+    @property
+    def id(self) -> str:
+        return self.filename.removesuffix(".mmd")
+
+    @property
+    def body(self) -> str:
+        """The Mermaid source without the generated-file comment."""
+        return "\n".join(line for line in self.source.splitlines() if not line.startswith("%%"))
+
+
+def diagrams(rs: RuleSet) -> list[Diagram]:
+    """The overview, each section, then each macro too big to inline."""
+    out: list[Diagram] = []
     macros: set[str] = set()
 
     d, used = overview_diagram(rs)
     macros |= used
-    sections.append(("00 · Overview", "00_overview.mmd", d.render()))
+    out.append(Diagram("overview", "00 · Overview", "Overview", "00_overview.mmd", d.render()))
     for sid, section in rs.sections.items():
         if sid == "00":
             continue
         d, used = section_diagram(rs, sid)
         macros |= used
-        sections.append(
-            (f"{sid} · {section.title}", f"{sid}_{_slug(section.title)}.mmd", d.render())
+        out.append(
+            Diagram(
+                "section",
+                f"{sid} · {section.title}",
+                section.title,
+                f"{sid}_{_slug(section.title)}.mmd",
+                d.render(),
+            )
         )
 
     # Only macros too big to inline get a diagram of their own.
@@ -433,8 +466,14 @@ def generate(rs: RuleSet) -> dict[str, str]:
         full = simplify(MacroRef(name), inline_env)
         if not isinstance(full, bool) and _atom_count(full) > MAX_INLINE_ATOMS:
             src = macro_diagram(rs, name).render()
-            sections.append((f"Macro · {name}", f"macro_{name}.mmd", src))
+            title = MACRO_TITLES.get(name) or name.replace("_", " ").capitalize()
+            out.append(Diagram("macro", f"Macro · {name}", title, f"macro_{name}.mmd", src))
+    return out
 
+
+def generate(rs: RuleSet) -> dict[str, str]:
+    """{filename: content} for every diagram plus README.md."""
+    files: dict[str, str] = {}
     readme = [
         "# Event permit rule diagrams",
         "",
@@ -448,16 +487,15 @@ def generate(rs: RuleSet) -> dict[str, str]:
         "diamond with several `yes` edges means every branch is checked.",
         "",
     ]
-    for heading, filename, src in sections:
-        files[filename] = src
-        body = "\n".join(line for line in src.splitlines() if not line.startswith("%%"))
+    for d in diagrams(rs):
+        files[d.filename] = d.source
         readme += [
-            f"## {heading}",
+            f"## {d.heading}",
             "",
-            f"[`{filename}`]({filename})",
+            f"[`{d.filename}`]({d.filename})",
             "",
             "```mermaid",
-            body,
+            d.body,
             "```",
             "",
         ]

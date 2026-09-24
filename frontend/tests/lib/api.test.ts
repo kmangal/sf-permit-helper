@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { ApiError, errorMessage, navigatorClarify, navigatorReply } from "../../src/lib/api.ts";
+import { ApiError, errorMessage, navigatorClarify, navigatorReply, ruleDiagrams } from "../../src/lib/api.ts";
 
 function mockFetch(status: number, body: unknown) {
   return vi.spyOn(globalThis, "fetch").mockResolvedValue(
@@ -48,5 +48,14 @@ describe("api", () => {
   it("has a fallback message", () => {
     expect(errorMessage("nope")).toBe("Something went wrong.");
     expect(errorMessage(new Error("Down"))).toBe("Down");
+  });
+});
+
+describe("ruleDiagrams", () => {
+  it("gets the diagram list", async () => {
+    const diagram = { id: "00_overview", kind: "overview", title: "Overview", source: "flowchart TD" };
+    const fetch = mockFetch(200, { diagrams: [diagram] });
+    expect(await ruleDiagrams()).toEqual([diagram]);
+    expect(fetch).toHaveBeenCalledWith("/api/v1/rules/diagrams");
   });
 });

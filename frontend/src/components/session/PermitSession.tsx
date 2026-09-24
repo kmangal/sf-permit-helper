@@ -7,13 +7,10 @@ import { useToast } from "../../hooks/useToast.ts";
 import { errorMessage } from "../../lib/api.ts";
 import { toOthers, toPermits } from "../../lib/rules.ts";
 import { IntakeScreen } from "../intake/IntakeScreen.tsx";
-import { Disclaimer } from "../layout/Disclaimer.tsx";
-import { Header } from "../layout/Header.tsx";
 import { SummaryScreen } from "../summary/SummaryScreen.tsx";
 import { Toast } from "../ui/Toast.tsx";
-import styles from "./PermitSession.module.css";
 
-export function PermitSession({ onStartOver }: { onStartOver: () => void }) {
+export function PermitSession() {
   const { toast, show } = useToast();
   const fail = useCallback((err: unknown) => show(errorMessage(err)), [show]);
   const nav = useNavigator({ onError: fail });
@@ -23,17 +20,13 @@ export function PermitSession({ onStartOver }: { onStartOver: () => void }) {
   const others = useMemo(() => toOthers(result), [result]);
 
   return (
-    <div className={styles.shell}>
-      <Header onStartOver={onStartOver} />
-      <div className={styles.body}>
-        {!result ? (
-          <IntakeScreen {...nav} />
-        ) : (
-          <SummaryScreen result={result} facts={result.facts} permits={permits} others={others} />
-        )}
-      </div>
-      <Disclaimer />
+    <>
+      {!result ? (
+        <IntakeScreen {...nav} />
+      ) : (
+        <SummaryScreen result={result} facts={result.facts} permits={permits} others={others} />
+      )}
       <Toast key={toast.id} message={toast.message} />
-    </div>
+    </>
   );
 }

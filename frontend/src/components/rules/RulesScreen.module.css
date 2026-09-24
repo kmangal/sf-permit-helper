@@ -1,0 +1,67 @@
+.screen { composes: scroll from global; flex: 1; }
+.page { max-width: 1280px; margin: 0 auto; padding: 56px 48px 72px; }
+.head { composes: a-rise from global; margin: 0 0 12px; font-size: 36px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
+.sub { composes: a-rise from global; margin: 0 0 32px; max-width: 680px; font-size: 16px; line-height: 1.5; color: var(--text-3); animation-delay: 60ms; }
+
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 28px; align-items: start; }
+
+.tabs { position: sticky; top: 0; display: flex; flex-direction: column; gap: 20px; }
+.group { display: flex; flex-direction: column; gap: 2px; }
+.groupLabel { padding: 0 12px 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tab {
+  composes: btn from global;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: left;
+}
+.tab:hover { background: var(--blue-wash); color: var(--blue); }
+.tab:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+.tab[aria-selected="true"] { background: var(--blue-tint); color: var(--blue); font-weight: 600; border-left-color: var(--gold); }
+
+.panel { min-width: 0; background: var(--surface); border: 1px solid var(--border-card); border-radius: 12px; padding: 24px; }
+.panelHead { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.title { margin: 0; font-size: 20px; font-weight: 700; }
+.zoom { composes: btn btn-ghost from global; flex-shrink: 0; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+.zoom[aria-pressed="true"] { color: #ffffff; background: var(--blue); }
+.canvas { composes: scroll from global; overflow-x: auto; min-height: 240px; padding: 8px 0; }
+.svg svg { display: block; margin: 0 auto; }
+.svg[data-fit="true"] svg { max-width: 100%; height: auto; }
+.note { margin: 0; padding: 40px 0; text-align: center; color: var(--muted); font-size: 14px; }
+
+.source { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; font-size: 13px; color: var(--text-3); }
+.source summary { cursor: pointer; }
+.code { composes: scroll from global; overflow-x: auto; margin: 10px 0 0; padding: 12px; border-radius: 8px; background: var(--ground); font-size: 12px; line-height: 1.5; }
+
+.legend { margin-top: 36px; max-width: 880px; }
+.legendHead { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+.legendText { margin: 0 0 14px; font-size: 14px; line-height: 1.55; color: var(--text-3); }
+.legendText code { font-size: 13px; padding: 1px 4px; border-radius: 4px; background: var(--border-soft); }
+.keys { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--text-2); }
+.key { display: flex; align-items: center; gap: 8px; }
+
+/* Swatches match CLASS_DEFS in backend/app/engine/diagrams.py. */
+.swatch { width: 16px; height: 12px; border-radius: 3px; border: 1px solid; }
+.swatch[data-kind="permit"] { background: #dbeafe; border-color: #1d4ed8; }
+.swatch[data-kind="plan"] { background: #ede9fe; border-color: #6d28d9; }
+.swatch[data-kind="requirement"] { background: #fef3c7; border-color: #b45309; }
+.swatch[data-kind="exemption"] { background: #dcfce7; border-color: #15803d; }
+.swatch[data-kind="advisory"] { background: #f1f5f9; border-color: #475569; }
+.swatch[data-kind="stop"] { background: #fee2e2; border-color: #b91c1c; }
+.swatch[data-kind="section"] { background: #e0f2fe; border-color: #0369a1; }
+
+@media (max-width: 760px) {
+  .page { padding: 32px 16px 48px; }
+  .head { font-size: 28px; }
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .tabs { position: static; flex-direction: row; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
+  .group { flex-direction: row; align-items: center; flex-shrink: 0; }
+  .groupLabel { display: none; }
+  .tab { white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0; }
+  .tab[aria-selected="true"] { border-bottom-color: var(--gold); }
+  .panel { padding: 16px; }
+}

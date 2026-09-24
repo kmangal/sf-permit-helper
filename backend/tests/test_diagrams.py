@@ -4,7 +4,7 @@ import re
 
 import pytest
 
-from app.engine.diagrams import DEFAULT_OUT, generate
+from app.engine.diagrams import DEFAULT_OUT, diagrams, generate
 from app.engine.model import load
 
 RS = load()
@@ -50,3 +50,12 @@ def test_committed_diagrams_are_current():
     assert set(on_disk) == set(FILES), "diagram files added or removed"
     stale = [name for name, src in FILES.items() if on_disk[name] != src]
     assert not stale, f"stale diagrams: {stale}"
+
+
+def test_diagrams_list_matches_the_generated_files():
+    listed = diagrams(RS)
+    assert [d.filename for d in listed] == [n for n in FILES if n.endswith(".mmd")]
+    assert listed[0].kind == "overview"
+    for d in listed:
+        assert d.title and not d.body.startswith("%%")
+        assert d.body.startswith("flowchart")

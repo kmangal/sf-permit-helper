@@ -18,17 +18,21 @@ src/
   lib/                  pure logic, no React
     api.ts              fetch client, ApiError
     rules.ts            terminal result -> Permit / OtherItem rows
+    mermaid.ts          Mermaid source -> SVG, loaded lazily
     summary.ts          summary headline, due lines, site check, fees
     format.ts, dates.ts
   hooks/                state over the lib modules
     useNavigator.ts     intake chat over /api/v1/navigator
+    useRuleDiagrams.ts  /rules page: diagram list, selected one as SVG
     useToast.ts, useAlive.ts
   components/
     session/            PermitSession: owns shared state, picks the screen
     intake/             IntakeScreen, ChatMessage, Choices, Composer, Ledger
     summary/            SummaryScreen, SiteCheckCard, PermitCard, OtherList, NotNeededList
-    layout/, ui/        Header; Check, Dots, Working, Toast, Staggered
-  App.tsx               remounts PermitSession on "Start over"
+    rules/              RulesPage, RulesScreen: the rule engine's flowcharts at /rules/:diagramId?
+    layout/             Shell (header + page + small print, around every route but 404), Header, NotFound
+    ui/                 Check, Dots, Working, Toast, Staggered
+  App.tsx               the route table (React Router); each visit to / remounts PermitSession
 tests/                  vitest suites, mirroring src/
   setup.ts              jest-dom matchers, cleanup
   fixtures.ts           shared wire-shape builders

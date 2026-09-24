@@ -1,18 +1,30 @@
+import { Link, useMatch, useNavigate } from "react-router";
 import styles from "./Header.module.css";
 
-interface Props {
-  onStartOver: () => void;
-}
-
-export function Header({ onStartOver }: Props) {
+export function Header() {
+  const home = useMatch("/");
+  const navigate = useNavigate();
   return (
     <>
       <header className={styles.bar}>
-        <div className={styles.brand}>San Francisco Permit Helper</div>
+        <Link className={styles.brand} to="/">
+          San Francisco Permit Helper
+        </Link>
         <nav className={styles.actions}>
-          <button type="button" className={styles.reset} onClick={onStartOver}>
-            Start over
-          </button>
+          {home ? (
+            <>
+              <Link className={styles.link} to="/rules">
+                How it decides
+              </Link>
+              <button type="button" className={styles.reset} onClick={() => navigate("/", { replace: true })}>
+                Start over
+              </button>
+            </>
+          ) : (
+            <Link className={styles.link} to="/">
+              Find your permits
+            </Link>
+          )}
         </nav>
       </header>
       <div className={styles.accent} />

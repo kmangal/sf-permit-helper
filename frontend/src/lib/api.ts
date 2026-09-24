@@ -1,7 +1,7 @@
 // Client for the permit API. Contract: docs/API_CONTRACT.md
 // Every function here has a matching endpoint.
 
-import type { ApiErrorBody, NavigatorTurn } from "../types/api.ts";
+import type { ApiErrorBody, NavigatorTurn, RuleDiagram, RuleDiagramsResponse } from "../types/api.ts";
 
 const BASE = "/api/v1";
 
@@ -71,6 +71,13 @@ export async function navigatorClarify(
     if (text) onText(text);
     if (done) return;
   }
+}
+
+/** The rules engine's decision flow, one Mermaid flowchart per section. */
+export async function ruleDiagrams(): Promise<RuleDiagram[]> {
+  const res = await fetch(BASE + "/rules/diagrams");
+  if (!res.ok) throw await errorFrom(res);
+  return ((await res.json()) as RuleDiagramsResponse).diagrams;
 }
 
 /** A message fit for a toast, from anything a request can throw. */
