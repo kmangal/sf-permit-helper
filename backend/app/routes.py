@@ -12,19 +12,15 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from .forms import flat_values, form_spec
 from .intake import extract_fallback, intake_schema, next_question
 from .models.jev import OpenRouterJevClient
 from .models.llm import LLMClient
 from .navigator import Navigator, Session
-from .rules import determine, find_rule
+from .rules import determine
 
 logger = logging.getLogger("permit-api")
 
 router = APIRouter(prefix="/api")
-
-# The user's own record of what they sent. No city API confirms any of this.
-SENT_LOG: dict[str, dict] = {}
 
 # Open navigator sessions, dropped once they reach a terminal or abort.
 SESSIONS: dict[str, Session] = {}
@@ -99,17 +95,6 @@ class DetermineRequest(BaseModel):
     facts: dict = Field(default_factory=dict)
 
 
-class SpecRequest(BaseModel):
-    facts: dict = Field(default_factory=dict)
-    answers: dict = Field(default_factory=dict)
-
-
-class PdfRequest(BaseModel):
-    facts: dict = Field(default_factory=dict)
-    answers: dict = Field(default_factory=dict)
-    ink: list[dict] = Field(default_factory=list)
-
-
 class NavigatorStart(BaseModel):
     description: str
 
@@ -118,20 +103,11 @@ class NavigatorAnswer(BaseModel):
     answer: str
 
 
-class SentRequest(BaseModel):
-    method: str = "portal"
-    note: str = ""
-
-
 def error(status: int, code: str, message: str, missing: list[str] | None = None) -> JSONResponse:
     return JSONResponse(
         status_code=status,
         content={"error": {"code": code, "message": message, "missing": missing or []}},
     )
-
-
-def unknown_permit(permit_id: str) -> JSONResponse:
-    return error(404, "unknown_permit", f"No permit with id {permit_id!r}.")
 
 
 @router.get("/intake/schema")
@@ -221,46 +197,3 @@ async def post_navigator_answer(session_id: str, req: NavigatorAnswer):
     if session is None:
         return error(404, "unknown_session", f"No open navigator session {session_id!r}.")
     return _navigator_turn(session_id, session, await navigator().reply(session, req.answer))
-
-
-@router.post("/forms/{permit_id}/spec")
-async def post_form_spec(permit_id: str, req: SpecRequest):
-    spec = form_spec(permit_id, req.facts, req.answers)
-    if spec is None:
-        return unknown_permit(permit_id)
-    return spec
-
-
-@router.post("/forms/{permit_id}/pdf")
-async def post_form_pdf(permit_id: str, req: PdfRequest):
-    """No AcroForm templates are in the repo yet, so every permit returns 409.
-
-    TODO: once templates land under forms/templates, fill them with pypdf
-    (pypdf.PdfWriter.update_page_form_field_values) keyed on each field's
-    `pdf_field`, draw `ink` strokes onto the page, and stream application/pdf.
-    Web-form-only permits (SFMTA, Entertainment Commission) keep this 409 path.
-    """
-    spec = form_spec(permit_id, req.facts, req.answers)
-    if spec is None:
-        return unknown_permit(permit_id)
-    rule = find_rule(permit_id, req.facts)
-    return JSONResponse(
-        status_code=409,
-        content={
-            "paste_values": flat_values(spec),
-            "target_url": rule["url"],
-        },
-    )
-
-
-@router.post("/forms/{permit_id}/sent")
-async def post_form_sent(permit_id: str, req: SentRequest):
-    if find_rule(permit_id, {}) is None:
-        return unknown_permit(permit_id)
-    record = {
-        "sent_at": datetime.now().astimezone().isoformat(timespec="seconds"),
-        "method": req.method,
-        "note": req.note,
-    }
-    SENT_LOG[permit_id] = record
-    return record

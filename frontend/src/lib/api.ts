@@ -1,14 +1,7 @@
 // Client for the permit API. Contract: docs/API_CONTRACT.md
 // Every function here has a matching endpoint.
 
-import type {
-  ApiErrorBody,
-  Facts,
-  FormSpec,
-  InkStroke,
-  NavigatorTurn,
-  SentRecord,
-} from "../types/api.ts";
+import type { ApiErrorBody, NavigatorTurn } from "../types/api.ts";
 
 const BASE = "/api";
 
@@ -21,19 +14,6 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.code = error.code ?? "unknown";
     this.missing = error.missing ?? [];
-  }
-}
-
-/** Thrown by renderPdf for web-form-only permits, with what to paste instead. */
-export class NoPdfTemplateError extends ApiError {
-  readonly pasteValues: Record<string, string>;
-  readonly targetUrl: string | undefined;
-
-  constructor(pasteValues: Record<string, string>, targetUrl?: string) {
-    super({ code: "no_pdf_template", message: "This permit has no PDF form." });
-    this.name = "NoPdfTemplateError";
-    this.pasteValues = pasteValues;
-    this.targetUrl = targetUrl;
   }
 }
 
@@ -63,49 +43,6 @@ export function navigatorStart(description: string): Promise<NavigatorTurn> {
 /** Answer the navigator's pending question: an option label or free text. */
 export function navigatorReply(sessionId: string, answer: string): Promise<NavigatorTurn> {
   return post(`/navigator/${sessionId}`, { answer });
-}
-
-/** A form's fields, filled from facts. */
-export function formSpec(
-  permitId: string,
-  facts: Facts,
-  answers: Record<string, string> = {},
-): Promise<FormSpec> {
-  return post(`/forms/${permitId}/spec`, { facts, answers });
-}
-
-/**
- * Render the filled PDF. `ink` is hand-drawn strokes in PDF user units at
- * 96 dpi, origin top-left. Throws NoPdfTemplateError for web-form-only permits.
- */
-export async function renderPdf(
-  permitId: string,
-  facts: Facts,
-  answers: Record<string, string>,
-  ink: InkStroke[],
-): Promise<Blob> {
-  const res = await fetch(`${BASE}/forms/${permitId}/pdf`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ facts, answers, ink }),
-  });
-  if (res.status === 409) {
-    const payload = (await res.json().catch(() => ({}))) as {
-      paste_values?: Record<string, string>;
-      target_url?: string;
-    };
-    throw new NoPdfTemplateError(payload.paste_values ?? {}, payload.target_url);
-  }
-  if (!res.ok) throw await errorFrom(res);
-  return res.blob();
-}
-
-/** Record that the user submitted a form. No city API confirms this. */
-export function markSent(
-  permitId: string,
-  { method = "portal", note = "" }: { method?: string; note?: string } = {},
-): Promise<SentRecord> {
-  return post(`/forms/${permitId}/sent`, { method, note });
 }
 
 /** A message fit for a toast, from anything a request can throw. */

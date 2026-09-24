@@ -13,6 +13,5 @@
 .divider { width: 1px; height: 16px; background: rgba(255, 255, 255, .28); }
 .product { font-size: 14px; color: rgba(255, 255, 255, .85); }
 .actions { display: flex; align-items: center; gap: 22px; font-size: 14px; }
-.back { composes: btn btn-link from global; font-size: 14px; color: rgba(255, 255, 255, .85); }
 .reset { composes: btn btn-link from global; font-size: 14px; color: rgba(255, 255, 255, .6); }
 .accent { height: 3px; flex-shrink: 0; background: var(--gold); }

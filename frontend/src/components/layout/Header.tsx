@@ -1,12 +1,10 @@
 import styles from "./Header.module.css";
 
 interface Props {
-  /** Shown only while a form is open. */
-  onBack?: () => void;
   onStartOver: () => void;
 }
 
-export function Header({ onBack, onStartOver }: Props) {
+export function Header({ onStartOver }: Props) {
   return (
     <>
       <header className={styles.bar}>
@@ -16,11 +14,6 @@ export function Header({ onBack, onStartOver }: Props) {
           <div className={styles.product}>Permit Navigator</div>
         </div>
         <nav className={styles.actions}>
-          {onBack && (
-            <button type="button" className={styles.back} onClick={onBack}>
-              Back to summary
-            </button>
-          )}
           <button type="button" className={styles.reset} onClick={onStartOver}>
             Start over
           </button>

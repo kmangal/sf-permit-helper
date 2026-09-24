@@ -63,23 +63,15 @@ input, button, textarea { font-family: inherit; }
 @keyframes slideL { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
 @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
 @keyframes ink { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
-@keyframes assemble { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }
 @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 .a-rise { animation: rise .55s var(--ease-out) both; }
 .a-fade { animation: fade .45s ease-out both; }
 .a-slide { animation: slideL .4s var(--ease-out) both; }
 .a-pop { animation: pop .4s var(--ease-out) both; }
 .a-ink { animation: ink .35s ease-out both; }
-.a-assemble { animation: assemble .55s var(--ease-out) both; }
 .a-toast { animation: toastIn .3s var(--ease-out) both; }
-.filling {
-  background: linear-gradient(90deg, var(--blue-tint) 25%, #d6e2f5 50%, var(--blue-tint) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
-}
 
 @media (prefers-reduced-motion: reduce) {
-  .a-rise, .a-fade, .a-slide, .a-pop, .a-ink, .a-assemble, .a-toast, .filling { animation: none !important; }
+  .a-rise, .a-fade, .a-slide, .a-pop, .a-ink, .a-toast { animation: none !important; }
 }

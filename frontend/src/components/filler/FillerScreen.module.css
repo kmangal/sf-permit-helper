@@ -1,2 +1,0 @@
-.screen { composes: a-assemble from global; flex: 1; display: flex; min-width: 0; }
-.center { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--desk); }

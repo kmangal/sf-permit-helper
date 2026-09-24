@@ -16,20 +16,17 @@ npm run build
 src/
   types/api.ts          wire shapes from the API contract
   lib/                  pure logic, no React
-    api.ts              fetch client, ApiError, NoPdfTemplateError
+    api.ts              fetch client, ApiError
     rules.ts            terminal result -> Permit / OtherItem rows
     summary.ts          summary headline, due lines, site check, fees
-    forms.ts            fillReducer: the form-filling state machine, plus field/pill views
-    ink.ts, exportPdf.ts, format.ts, dates.ts
+    format.ts, dates.ts
   hooks/                state over the lib modules
     useNavigator.ts     intake chat over /api/navigator
-    useFormFiller.ts    loads specs, steps fillReducer on a timer
-    useInk.ts, useToast.ts, useAlive.ts
+    useToast.ts, useAlive.ts
   components/
     session/            PermitSession: owns shared state, picks the screen
     intake/             IntakeScreen, ChatMessage, Chips, Composer, Ledger
     summary/            SummaryScreen, SiteCheckCard, PermitCard, OtherList, NotNeededList
-    filler/             FillerScreen, FormsList, FormToolbar, Paper, PaperField, PenOverlay, Feed, AskBox
     layout/, ui/        Header; Check, Dots, Working, Toast, Staggered
   App.tsx               remounts PermitSession on "Start over"
 tests/                  vitest suites, mirroring src/

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { known, permit, rule, terminal } from "../fixtures.ts";
-import { dueLine, feeSummary, permitDue, shortFee, siteCheck, summaryHead, summarySub } from "../../src/lib/summary.ts";
+import { dueLine, feeSummary, permitDue, siteCheck, summaryHead, summarySub } from "../../src/lib/summary.ts";
 
 const NOW = new Date(2026, 8, 1).getTime();
 
@@ -24,13 +24,6 @@ describe("permitDue / dueLine", () => {
   it("falls back to the lead text without a date", () => {
     expect(dueLine(permit(), {}, NOW).text).toBe("At least 30 days before the event.");
     expect(dueLine(permit({ lead_text: "" }), {}, NOW).text).toBe("No lead time listed");
-  });
-});
-
-describe("shortFee", () => {
-  it("keeps the first sentence", () => {
-    expect(shortFee(permit({ fee_basis: "$122. Drops at 90 days" }))).toBe("$122");
-    expect(shortFee(permit({ fee_basis: "" }))).toBe("no fee");
   });
 });
 

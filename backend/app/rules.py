@@ -829,7 +829,6 @@ def determine(facts: dict, today: date_cls | None = None) -> dict:
                 "limits": _split_limits(ex["limits"], citation),
                 "channel": r["channel"],
                 "self_serve_url": r["url"],
-                "can_autofill": True,
                 "you_must_add": _split_you_add(r["youAdd"]),
                 "citation": citation,
             }
@@ -859,13 +858,3 @@ def determine(facts: dict, today: date_cls | None = None) -> dict:
         "first_deadline": first_deadline,
         "permits": permits,
     }
-
-
-def find_rule(permit_id: str, facts: dict, today: date_cls | None = None) -> dict | None:
-    """The raw rule record for one permit id, or None if the id is unknown."""
-    f = {k: v for k, v in (facts or {}).items() if v is not None}
-    days = _days_out(f.get("date"), today)
-    for r in rules(f, days):
-        if r["id"] == permit_id:
-            return r
-    return None

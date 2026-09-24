@@ -12,11 +12,6 @@ export function permitDue(p: Permit, facts: Facts): Date | null {
   return null;
 }
 
-/** The first sentence of the fee basis, for tight spots. */
-export function shortFee(p: Permit): string {
-  return p.fee_basis ? (p.fee_basis.split(". ")[0] ?? "") : "no fee";
-}
-
 /** The due line on a permit card, and whether it is already late. */
 export function dueLine(p: Permit, facts: Facts, now = Date.now()): { text: string; late: boolean } {
   const due = permitDue(p, facts);

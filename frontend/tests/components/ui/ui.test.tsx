@@ -34,16 +34,10 @@ describe("Toast / Working", () => {
 });
 
 describe("Header", () => {
-  it("offers back only when given", async () => {
+  it("starts over", async () => {
     const onStartOver = vi.fn();
-    const onBack = vi.fn();
-    const { rerender } = render(<Header onStartOver={onStartOver} />);
-    expect(screen.queryByRole("button", { name: "Back to summary" })).not.toBeInTheDocument();
+    render(<Header onStartOver={onStartOver} />);
     await userEvent.click(screen.getByRole("button", { name: "Start over" }));
     expect(onStartOver).toHaveBeenCalled();
-
-    rerender(<Header onStartOver={onStartOver} onBack={onBack} />);
-    await userEvent.click(screen.getByRole("button", { name: "Back to summary" }));
-    expect(onBack).toHaveBeenCalled();
   });
 });

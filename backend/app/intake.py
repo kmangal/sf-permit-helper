@@ -9,7 +9,7 @@ import re
 from datetime import date as date_cls
 from datetime import timedelta
 
-# Facts that intake asks once and every form autofills from.
+# Facts about the organizer and event that intake asks once.
 SHARED_FACTS = (
     "organizer",
     "email",

@@ -1,8 +1,7 @@
 // Small, realistic API payloads for tests.
 
-import type { FormFill } from "../src/lib/forms.ts";
 import type { Permit } from "../src/lib/rules.ts";
-import type { FormSpec, KnownFact, QuestionTurn, Rule, TerminalTurn } from "../src/types/api.ts";
+import type { KnownFact, QuestionTurn, Rule, TerminalTurn } from "../src/types/api.ts";
 
 export const source = {
   id: "sfmta_block_party",
@@ -80,45 +79,6 @@ export function permit(overrides: Partial<Permit> = {}): Permit {
     verify: "",
     self_serve_url: source.url,
     sources: [source],
-    channel: "Submit through the SFMTA online form.",
-    you_must_add: [],
-    can_autofill: true,
-    ...overrides,
-  };
-}
-
-export const spec: FormSpec = {
-  permit_id: "sfmta_closure",
-  form_title: "Block Party Application",
-  agency_full: "San Francisco Municipal Transportation Agency",
-  reference: "Rev. 2024",
-  sections: [
-    {
-      title: "Applicant",
-      fields: [
-        { key: "organizer", label: "Applicant name", value: "Maya Reyes", source: "intake" },
-        { key: "phone", label: "Phone", value: "", source: "intake" },
-        {
-          key: "lpg",
-          label: "LP gas",
-          value: "",
-          source: "ask",
-          ask: { prompt: "How many propane cylinders?", hint: "Under 20 gallons.", placeholder: "one 5-gallon" },
-        },
-      ],
-    },
-  ],
-};
-
-export function fill(overrides: Partial<FormFill> = {}): FormFill {
-  return {
-    progress: 0,
-    answers: {},
-    feed: [],
-    waiting: false,
-    done: false,
-    spec,
-    sections: spec.sections,
     ...overrides,
   };
 }

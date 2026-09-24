@@ -15,6 +15,7 @@ class Environment(BaseSettings):
 
     openrouter_api_key: SecretStr
 
+
 @lru_cache
 def get_environment() -> Environment:
     return Environment()

@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { toPermits } from "../../../src/lib/rules.ts";
 import { known, permit, terminal } from "../../fixtures.ts";
 import { NotNeededList } from "../../../src/components/summary/NotNeededList.tsx";
@@ -10,15 +10,12 @@ import { SiteCheckCard } from "../../../src/components/summary/SiteCheckCard.tsx
 import { SummaryScreen } from "../../../src/components/summary/SummaryScreen.tsx";
 
 describe("PermitCard", () => {
-  it("shows the permit and its fill action", async () => {
-    const onFill = vi.fn();
+  it("shows the permit and where to apply", () => {
     render(
       <PermitCard
         permit={permit({ verify: "Check with SFMTA", limits: ["Under 8 hours."] })}
         index={0}
         due={{ text: "Was due Aug 11", late: true }}
-        fillLabel="Fill for me"
-        onFill={onFill}
       />,
     );
     const card = screen.getByRole("article", { name: "Street closure" });
@@ -26,13 +23,10 @@ describe("PermitCard", () => {
     expect(within(card).getByText("Under 8 hours.")).toBeInTheDocument();
     expect(within(card).getByText("Check with SFMTA")).toBeInTheDocument();
     expect(within(card).getByRole("link", { name: "sf.gov: Host a neighborhood block party" })).toBeInTheDocument();
-    await userEvent.click(within(card).getByRole("button", { name: "Fill for me" }));
-    expect(onFill).toHaveBeenCalled();
-  });
-
-  it("hides the fill button for permits with no form", () => {
-    render(<PermitCard permit={permit({ can_autofill: false })} index={0} due={{ text: "", late: false }} fillLabel="Fill" onFill={vi.fn()} />);
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(within(card).getByRole("link", { name: "Apply on the city site" })).toHaveAttribute(
+      "href",
+      "https://www.sf.gov/host-a-neighborhood-block-party",
+    );
   });
 });
 
@@ -77,8 +71,6 @@ describe("SummaryScreen", () => {
         known={known}
         permits={permits}
         others={[]}
-        fillLabel={() => "Fill for me"}
-        onFill={vi.fn()}
       />,
     );
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("1 permit for your event.");

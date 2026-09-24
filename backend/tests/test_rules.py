@@ -1,4 +1,4 @@
-"""Rules engine, fallback extraction, and form spec tests.
+"""Rules engine and fallback extraction tests.
 
 Expectations come from the prototype in design/canvas/Main.dc.html and the
 shapes in docs/API_CONTRACT.md.
@@ -8,7 +8,6 @@ from datetime import date, timedelta
 
 import pytest
 
-from app.forms import form_spec
 from app.intake import extract_fallback
 from app.rules import determine
 
@@ -70,7 +69,6 @@ def test_bocana_shape_matches_contract():
 
     bp = permit(result, "bp")
     assert bp["due_date"] == (date.today() + timedelta(days=42 - 30)).isoformat()
-    assert bp["can_autofill"] is True
     assert bp["you_must_add"] == ["photos of the posted notice"]
     assert bp["citation"]["url"] == "https://www.sf.gov/host-a-neighborhood-block-party"
     assert bp["citation"]["fetched_at"] == "2026-09-12"
@@ -147,28 +145,3 @@ def test_extract_fallback_reads_the_bocana_sentence():
         "sales",
     }
     assert all(f["confidence"] in {"high", "medium", "low"} for f in found)
-
-
-# --- form spec ---------------------------------------------------------------
-
-
-def test_fire_form_asks_about_lp_gas():
-    spec = form_spec("fire", bocana_facts(), {})
-    fields = {fl["key"]: fl for sec in spec["sections"] for fl in sec["fields"]}
-    lpg = fields["lpg"]
-    assert lpg["source"] == "ask"
-    assert lpg["value"] == ""
-    assert lpg["ask"]["prompt"] == "How many propane cylinders, and what size?"
-    assert lpg["pdf_field"] == "lpg"
-    assert spec["agency_full"] == "San Francisco Fire Department, Bureau of Fire Prevention"
-
-
-def test_fire_form_takes_the_answer_as_user_source():
-    spec = form_spec("fire", bocana_facts(), {"lpg": "one 5-gallon"})
-    fields = {fl["key"]: fl for sec in spec["sections"] for fl in sec["fields"]}
-    assert fields["lpg"]["value"] == "one 5-gallon"
-    assert fields["lpg"]["source"] == "user"
-
-
-def test_unknown_permit_has_no_spec():
-    assert form_spec("nope", bocana_facts(), {}) is None

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { ApiError, errorMessage, navigatorReply, NoPdfTemplateError, renderPdf } from "../../src/lib/api.ts";
+import { ApiError, errorMessage, navigatorReply } from "../../src/lib/api.ts";
 
 function mockFetch(status: number, body: unknown) {
   return vi.spyOn(globalThis, "fetch").mockResolvedValue(
@@ -23,13 +23,6 @@ describe("api", () => {
     const err = await navigatorReply("s", "yes").catch((e: unknown) => e);
     expect(err).toBeInstanceOf(ApiError);
     expect(err).toMatchObject({ code: "unknown_session", message: "Session expired." });
-  });
-
-  it("turns a 409 from /pdf into paste values", async () => {
-    mockFetch(409, { paste_values: { name: "Maya" }, target_url: "https://sfmta.com" });
-    const err = await renderPdf("bp", {}, {}, []).catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(NoPdfTemplateError);
-    expect(err).toMatchObject({ pasteValues: { name: "Maya" }, targetUrl: "https://sfmta.com" });
   });
 
   it("has a fallback message", () => {

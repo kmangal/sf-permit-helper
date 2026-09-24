@@ -1,6 +1,6 @@
 # API contract
 
-What the frontend calls. Derived from the prototype in `design/canvas/Main.dc.html`, where `rules()`, `extras()` and `paperSpec()` are the reference implementations. Every determination carries a citation; the LLM never decides whether a permit applies.
+What the frontend calls. Derived from the prototype in `design/canvas/Main.dc.html`, where `rules()` and `extras()` are the reference implementations. Every determination carries a citation; the LLM never decides whether a permit applies.
 
 Base path `/api`. JSON in, JSON out. No auth for now.
 
@@ -119,7 +119,6 @@ The rules engine. Deterministic, no model in the path.
       ],
       "channel": "Submit through the SFMTA online form, then post the notice for 7 days.",
       "self_serve_url": "https://www.sf.gov/host-a-neighborhood-block-party",
-      "can_autofill": true,
       "you_must_add": ["photos of the posted notice"],
       "citation": { }
     }
@@ -131,63 +130,7 @@ Money in integer cents. `not_needed` permits come back too, with `why`, for the 
 
 Rules live in code with a `citation` each, not in a prompt. When a source page's `last_published_at` changes, flag the rule for review rather than trusting it.
 
-## 4. `POST /api/forms/{permit_id}/spec`
-
-The form's fields, filled from facts. Field order is render order.
-
-```jsonc
-// request
-{ "facts": { }, "answers": { "lpg": "one 5-gallon" } }
-
-// response
-{
-  "permit_id": "fire",
-  "form_title": "BFP Form 1010, Permit Application",
-  "agency_full": "San Francisco Fire Department, Bureau of Fire Prevention",
-  "reference": "Rev. 7/2024\nFee $436",
-  "pdf_template": "bfp-1010-2024.pdf",
-  "sections": [
-    { "title": "Applicant", "fields": [
-      { "key": "organizer", "label": "Applicant name", "value": "Maya Reyes",
-        "source": "intake", "span": 1, "editable": true, "pdf_field": "applicant_name" },
-      { "key": "lpg", "label": "LP gas on site", "value": "", "source": "ask", "span": 1,
-        "ask": { "prompt": "How many propane cylinders, and what size?",
-                 "hint": "Under 20 gallons total for a 10x10 booth.", "placeholder": "e.g. one 5-gallon" } }
-    ]}
-  ]
-}
-```
-
-`source` is `intake` (autofilled from shared facts), `derived` (computed from facts), `ask` (needs the user), or `user` (they typed or edited it). The filler animates through fields in order, pausing on any `ask` with an empty value.
-
-Shared fields (`organizer`, `email`, `phone`, `address`, `date`, `hours`, `attendance`, `event_name`) are asked once in intake and autofill on every form. Only form-specific fields get asked in the filler.
-
-## 5. `POST /api/forms/{permit_id}/pdf`
-
-Renders the filled PDF, including hand-drawn ink.
-
-```jsonc
-// request
-{
-  "facts": { },
-  "answers": { "lpg": "one 5-gallon" },
-  "ink": [ { "page": 1, "points": [[412, 690], [418, 684]], "width": 2.2, "color": "#16264d" } ]
-}
-```
-
-Ink points are in PDF user units, origin top-left of the page, at 96 dpi. The client draws at render scale and converts before sending. Response is `application/pdf`.
-
-Fill with `pypdf` for AcroForm templates. For web-form-only permits (SFMTA, Entertainment Commission) there is no template: return `{"paste_values": {...}, "target_url": "..."}` with 409 instead of a PDF.
-
-## 6. `POST /api/forms/{permit_id}/sent`
-
-Marks a form as submitted. Returns the updated case record. No city API exists to confirm; this is the user's own record.
-
-```jsonc
-{ "sent_at": "2026-09-12T14:02:00-07:00", "method": "portal", "note": "" }
-```
-
-## 7. `POST /api/navigator` and `POST /api/navigator/{session_id}`
+## 4. `POST /api/navigator` and `POST /api/navigator/{session_id}`
 
 What the frontend's chat uses. Walks the rules file (`backend/app/rules/sf_event_permits.yaml`) one question at a time. For each question jev picks an answer from the description, or says "unknown", and then the question goes to the user. Sessions live in memory and are dropped once they end.
 
@@ -237,8 +180,8 @@ What the frontend's chat uses. Walks the rules file (`backend/app/rules/sf_event
 { "error": { "code": "insufficient_facts", "message": "Need site and alcohol before determining.", "missing": ["site", "alcohol"] } }
 ```
 
-Codes: `insufficient_facts`, `unknown_permit`, `unknown_session`, `no_pdf_template`, `geocode_failed`, `upstream_unavailable`.
+Codes: `insufficient_facts`, `unknown_session`, `geocode_failed`, `upstream_unavailable`.
 
 ## Not in scope
 
-No status tracking. No city submission API exists for any of these permits. Anything after "sent" is the user's own record, or a Gmail integration reading confirmation mail.
+Filling out or submitting permit applications. The app stops at the list of permits; each one links to where to apply. No city submission API exists for any of these permits.

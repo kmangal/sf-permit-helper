@@ -1,4 +1,4 @@
-// Turns the navigator's terminal result into what the summary and filler show.
+// Turns the navigator's terminal result into what the summary shows.
 // Rule shapes come from backend/app/rules/sf_event_permits.yaml.
 
 import type { Fee, LeadTime, Rule, Source, TerminalTurn } from "../types/api.ts";
@@ -7,7 +7,7 @@ import { humanize, usd } from "./format.ts";
 /** Kinds shown as their own card on the summary; everything else is a to-do. */
 const PERMIT_KINDS = ["permit", "license"];
 
-/** A permit or license, in the shape the summary rows and the filler share. */
+/** A permit or license, as a summary row shows it. */
 export interface Permit {
   id: string;
   kind: string;
@@ -21,9 +21,6 @@ export interface Permit {
   verify: string;
   self_serve_url: string;
   sources: Source[];
-  channel: string;
-  you_must_add: string[];
-  can_autofill: boolean;
 }
 
 /** A requirement, plan, document or advisory: the "Also on your list" rows. */
@@ -112,10 +109,6 @@ export function toPermits(terminal: TerminalTurn | null): Permit[] {
         verify: r.verify || "",
         self_serve_url: r.sources[0]?.url ?? "",
         sources: r.sources,
-        channel: "",
-        you_must_add: [],
-        // No forms are keyed to the rules file's ids yet; see backend/app/forms.py.
-        can_autofill: false,
       };
     })
     .sort((a, b) => (b.lead_days ?? -1) - (a.lead_days ?? -1));

@@ -15,16 +15,12 @@ interface Props {
   known: KnownFact[];
   permits: Permit[];
   others: OtherItem[];
-  /** "Fill for me", "Open" or "Sent", per permit. */
-  fillLabel: (id: string) => string;
-  onFill: (id: string) => void;
 }
 
 /** What the city needs for this event, from the navigator's terminal result. */
-export function SummaryScreen({ result, facts, known, permits, others, fillLabel, onFill }: Props) {
+export function SummaryScreen({ result, facts, known, permits, others }: Props) {
   const [showNotNeeded, setShowNotNeeded] = useState(false);
   const eventTitle = String(facts.event_name ?? facts.eventName ?? "");
-  const firstFillable = permits.find((p) => p.can_autofill);
   const notNeeded = result.not_needed;
 
   return (
@@ -37,14 +33,7 @@ export function SummaryScreen({ result, facts, known, permits, others, fillLabel
         <SiteCheckCard check={siteCheck(result, known)} fees={feeSummary(result)} />
 
         {permits.map((p, i) => (
-          <PermitCard
-            key={p.id}
-            permit={p}
-            index={i}
-            due={dueLine(p, facts)}
-            fillLabel={fillLabel(p.id)}
-            onFill={() => onFill(p.id)}
-          />
+          <PermitCard key={p.id} permit={p} index={i} due={dueLine(p, facts)} />
         ))}
 
         <OtherList items={others} after={permits.length} />
@@ -58,11 +47,6 @@ export function SummaryScreen({ result, facts, known, permits, others, fillLabel
           >
             {notNeeded.length} other permits checked and not needed. {showNotNeeded ? "Hide" : "Show"}
           </button>
-          {firstFillable && (
-            <button type="button" className={styles.fillAll} onClick={() => onFill(firstFillable.id)}>
-              Fill everything for me
-            </button>
-          )}
         </Staggered>
 
         {showNotNeeded && <NotNeededList items={notNeeded} />}

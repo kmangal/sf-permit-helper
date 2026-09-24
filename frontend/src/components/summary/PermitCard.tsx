@@ -8,11 +8,9 @@ interface Props {
   /** Position in the list, for the entrance stagger. */
   index: number;
   due: { text: string; late: boolean };
-  fillLabel: string;
-  onFill: () => void;
 }
 
-export function PermitCard({ permit: p, index, due, fillLabel, onFill }: Props) {
+export function PermitCard({ permit: p, index, due }: Props) {
   const limits = p.limits.join(" ");
   return (
     <Staggered as="article" index={index} className={`${card.card} ${styles.card}`} aria-label={p.name}>
@@ -51,18 +49,13 @@ export function PermitCard({ permit: p, index, due, fillLabel, onFill }: Props) 
           </dd>
         </dl>
       </div>
-      <div className={styles.actions}>
-        {p.can_autofill && (
-          <button type="button" className={styles.fill} onClick={onFill}>
-            {fillLabel}
-          </button>
-        )}
-        {p.self_serve_url && (
+      {p.self_serve_url && (
+        <div className={styles.actions}>
           <a className={styles.apply} href={p.self_serve_url} target="_blank" rel="noreferrer">
             Apply on the city site
           </a>
-        )}
-      </div>
+        </div>
+      )}
     </Staggered>
   );
 }
