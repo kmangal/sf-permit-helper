@@ -1,15 +1,12 @@
-import anthropic
+from openrouter import OpenRouter
 
 from ..environment import get_environment
 
 
-class LLMClient:
-    BASE_URL = "https://openrouter.ai/api"
-
-    def __init__(self, model: str = "claude-sonnet-5"):
-        self.client = anthropic.AsyncAnthropic(
+class OpenRouterLlmClient:
+    def __init__(self, model: str = "anthropic/claude-haiku-4.5"):
+        self.client = OpenRouter(
             api_key=get_environment().openrouter_api_key.get_secret_value(),
-            base_url=self.BASE_URL,
         )
         self.model = model
 
@@ -19,14 +16,36 @@ class LLMClient:
         *,
         system: str | None = None,
     ) -> str:
-        kwargs: dict = {
-            "model": self.model,
-            "max_tokens": 16000,
-            "messages": [{"role": "user", "content": prompt}],
-            "thinking": {"type": "adaptive"},
-        }
+        messages: list = []
         if system:
-            kwargs["system"] = system
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
 
-        response = await self.client.messages.create(**kwargs)
-        return next(block.text for block in response.content if block.type == "text")
+        response = await self.client.chat.send_async(
+            model=self.model,
+            messages=messages,
+            max_tokens=5000,
+        )
+        content = response.choices[0].message.content
+        if isinstance(content, str):
+            return content
+        # Content can also arrive as a list of parts; keep only the text ones.
+        return "".join(getattr(part, "text", "") for part in content or [])
+
+
+async def test() -> None:
+
+    client = OpenRouterLlmClient()
+
+    response = await client.complete("Say 'hello' and nothing else.")
+
+    print(f"Response: {response}")
+
+    assert response, "Empty response from LLM"
+
+
+if __name__ == "__main__":
+    # Run smoke test to make sure the LLM call works
+    import asyncio
+
+    asyncio.run(test())

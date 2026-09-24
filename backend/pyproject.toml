@@ -2,14 +2,14 @@
 name = "sf-permit-helper"
 version = "0.1.0"
 description = "Helps people identify permits they need for tasks in San Francisco"
-requires-python = ">=3.11"
+requires-python = "==3.13.1"
 dependencies = [
     "fastapi==0.115.0",
     "uvicorn==0.30.6",
-    "anthropic",
     "pyyaml==6.0.3",
     "typesafe-sdk==0.7.1",
     "pydantic-settings==2.15.0",
+    "openrouter==1.2.22",
 ]
 
 [tool.ruff]
@@ -20,7 +20,7 @@ line-length = 100
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.ty.environment]
-python-version = "3.12"
+python-version = "3.13"
 
 [dependency-groups]
 dev = [

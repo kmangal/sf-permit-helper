@@ -1,5 +1,5 @@
 // Turns the navigator's terminal result into what the summary shows.
-// Rule shapes come from backend/app/rules/sf_event_permits.yaml.
+// Rule shapes come from backend/app/engine/rules.yaml.
 
 import type { Fee, LeadTime, Rule, Source, TerminalTurn } from "../types/api.ts";
 import { humanize, usd } from "./format.ts";

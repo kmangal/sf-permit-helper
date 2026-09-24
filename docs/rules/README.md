@@ -1,6 +1,6 @@
 # Event permit rule diagrams
 
-Generated from `backend/app/rules/sf_event_permits.yaml`. Do not edit by hand;
+Generated from `backend/app/engine/rules.yaml`. Do not edit by hand;
 regenerate with `cd backend && python -m app.engine.diagrams`.
 
 Diamonds are questions, hexagons are macros (each drawn further down), and

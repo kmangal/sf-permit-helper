@@ -56,7 +56,4 @@ Commit messages must be Conventional Commits (`feat:`, `fix:`, `chore:` …); a 
 
 Full contract in `docs/API_CONTRACT.md`.
 
-- `GET /api/intake/schema` — intake questions, in ask order
-- `POST /api/extract` — free text to facts (LLM, with a regex fallback)
-- `POST /api/determine` — facts to permits (deterministic rules engine)
-- `POST /api/navigator`, `/api/navigator/{session_id}` — conversational navigator: jev answers from the description, the rules engine picks questions. The frontend chat runs on this; `/extract` and `/determine` are no longer called by it
+- `POST /api/navigator`, `/api/navigator/{session_id}` — conversational navigator: jev answers from the description, the rules engine picks questions. The frontend chat runs on this

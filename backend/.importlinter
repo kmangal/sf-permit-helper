@@ -9,7 +9,7 @@ type = layers
 layers =
     app.main
     app.routes
-    app.navigator | app.intake | app.rules | app.models
+    app.navigator | app.models
     app.engine | app.environment
 
 [importlinter:contract:engine-layers]

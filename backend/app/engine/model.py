@@ -17,7 +17,7 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, model_valida
 
 from .logic import Atom, Cond, MacroRef, RuleRef, parse, tests_in
 
-DEFAULT_PATH = Path(__file__).resolve().parent.parent / "rules" / "sf_event_permits.yaml"
+DEFAULT_PATH = Path(__file__).resolve().parent / "rules.yaml"
 
 Condition = Annotated[Cond, BeforeValidator(parse)]
 

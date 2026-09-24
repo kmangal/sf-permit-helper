@@ -11,14 +11,13 @@ Right now it covers **events**: block parties, park gatherings, parades, street 
 How a request moves through the app:
 
 1. **Intake.** A chat-style navigator reads your description and fills in whatever facts it can (date, site, attendance, and so on). The LLM only extracts facts. It never decides whether a permit applies.
-2. **Determination.** A deterministic rules engine (`backend/app/rules/sf_event_permits.yaml`) turns those facts into a list of permits, and each result cites its source on sf.gov or in the municipal code. The engine also picks the next question to ask. Diagrams of the rules are in `docs/rules/`.
+2. **Determination.** A deterministic rules engine (`backend/app/engine/rules.yaml`) turns those facts into a list of permits, and each result cites its source on sf.gov or in the municipal code. The engine also picks the next question to ask. Diagrams of the rules are in `docs/rules/`.
 
 ## Layout
 
 ```
 backend/     FastAPI, API only. app/main.py builds the app; every route is in app/routes.py
-  app/engine/    rules engine and diagram generator
-  app/rules/     permit rules (YAML)
+  app/engine/    rules engine, permit rules (rules.yaml), and diagram generator
   app/models/    LLM clients
   tests/         pytest
 frontend/    React 19 + TypeScript + Vite; see frontend/README.md

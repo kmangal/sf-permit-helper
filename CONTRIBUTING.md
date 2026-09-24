@@ -53,7 +53,7 @@ Imports have to follow the layers of the architecture. Moving code to the right 
 
 **Backend.** [import-linter](https://import-linter.readthedocs.io/) contracts live in `backend/.importlinter`:
 
-- `app.main` → `app.routes` → `app.navigator | app.intake | app.rules | app.models` → `app.engine | app.environment`. A module can import only from layers below it. Modules in the same layer (split by `|`) can't import each other.
+- `app.main` → `app.routes` → `app.navigator | app.models` → `app.engine | app.environment`. A module can import only from layers below it. Modules in the same layer (split by `|`) can't import each other.
 - Inside `app.engine`, `diagrams` and `engine` sit above `model`, which sits above `logic`.
 - `app.engine` must stay deterministic. It can't import `fastapi`, `anthropic`, `typesafe_sdk`, `app.models`, or `app.environment`.
 
@@ -90,4 +90,4 @@ For a guided prompt, run `uv run --project backend cz commit` from the repo root
 - Branch off `main` and keep each PR to one change.
 - Make sure the hooks and both test suites pass.
 - If you change the API, update `docs/API_CONTRACT.md` in the same PR.
-- If you change rules in `backend/app/rules/`, regenerate the diagrams in `docs/rules/` with `cd backend && uv run python -m app.engine.diagrams`.
+- If you change rules in `backend/app/engine/rules.yaml`, regenerate the diagrams in `docs/rules/` with `cd backend && uv run python -m app.engine.diagrams`.

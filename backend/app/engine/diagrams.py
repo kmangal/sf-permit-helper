@@ -40,7 +40,7 @@ from .model import RuleSet, load
 DEFAULT_OUT = Path(__file__).resolve().parents[3] / "docs" / "rules"
 MAX_INLINE_ATOMS = 2
 HEADER = (
-    "%% Generated from backend/app/rules/sf_event_permits.yaml"
+    "%% Generated from backend/app/engine/rules.yaml"
     " by `python -m app.engine.diagrams`. Do not edit."
 )
 
@@ -438,7 +438,7 @@ def generate(rs: RuleSet) -> dict[str, str]:
     readme = [
         "# Event permit rule diagrams",
         "",
-        "Generated from `backend/app/rules/sf_event_permits.yaml`. Do not edit by hand;",
+        "Generated from `backend/app/engine/rules.yaml`. Do not edit by hand;",
         "regenerate with `cd backend && python -m app.engine.diagrams`.",
         "",
         "Diamonds are questions, hexagons are macros (each drawn further down), and",
