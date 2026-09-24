@@ -74,6 +74,7 @@ def test_minimal_file_loads():
         ("{macro: m}", "{fact: e, op: in, value: x}", "needs a list"),
         ("{macro: m}", "{rule: r1}", "cycle"),
         ('section: "00"', 'section: "09"', "unknown section"),
+        ("values: [x, y]", "values: [x, y], labels: {z: Z}", "labels for values"),
     ],
 )
 def test_bad_files_are_rejected(old, new, message):

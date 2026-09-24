@@ -47,6 +47,14 @@ class Fact(_Model):
     type: Literal["enum", "bool", "int", "number"]
     question: str
     values: tuple[str, ...] | None = None
+    # Display text for enum values whose names do not read well, e.g. federal_nps.
+    labels: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _check_labels(self) -> "Fact":
+        if stray := sorted(set(self.labels) - set(self.values or ())):
+            raise ValueError(f"labels for values the fact does not have: {stray}")
+        return self
 
 
 class Section(_Model):

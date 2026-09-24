@@ -89,6 +89,10 @@ facts:
       - treasure_island         # Treasure Island or Yerba Buena Island
       - federal_nps             # GGNRA: Crissy Field, Ocean Beach, Lands End, Fort Mason
       - federal_presidio_trust  # Presidio Trust-managed areas
+    labels:
+      treasure_island: Treasure Island
+      federal_nps: Federal National Parks Service
+      federal_presidio_trust: Federal Presidio Trust
     question: Who controls the land where the event happens?
   indoors:
     type: bool

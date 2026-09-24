@@ -309,7 +309,7 @@ def options_for(rules: RuleSet, fact: str) -> list[Option]:
         case "bool":
             return [Option("yes", True), Option("no", False)]
         case "enum":
-            return [Option(v, v) for v in spec.values or ()]
+            return [Option(spec.labels.get(v, v), v) for v in spec.values or ()]
     return numeric_options(spec.type == "int", atoms_for(rules, fact))
 
 

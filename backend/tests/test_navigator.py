@@ -158,6 +158,12 @@ def test_parsed_reply_skips_jev():
     assert jev.asked[:1] == ["location"]  # the next question, not a validation call
 
 
+def test_enum_options_use_labels_where_given():
+    options = {o.value: o.label for o in options_for(RS, "location")}
+    assert options["federal_nps"] == "Federal National Parks Service"
+    assert options["city_park"] == "city_park"
+
+
 @pytest.mark.parametrize(
     "fact", [f for f, spec in RS.facts.items() if spec.type in ("int", "number")]
 )
