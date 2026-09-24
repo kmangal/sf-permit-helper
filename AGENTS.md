@@ -52,6 +52,8 @@ uv run --project backend pre-commit run --all-files
 
 Commit messages must be Conventional Commits (`feat:`, `fix:`, `chore:` …); a commitizen `commit-msg` hook enforces this. See `CONTRIBUTING.md`.
 
+Releases: `./release.sh` from a clean `development` bumps the version, tags `vX.Y.Z`, and fast-forwards the `production` branch (what Railway deploys). See `docs/RELEASING.md`.
+
 ## Key API endpoints
 
 Full contract in `docs/API_CONTRACT.md`.

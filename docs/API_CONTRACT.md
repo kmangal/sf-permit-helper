@@ -82,7 +82,7 @@ Order is the overview, then each section, then each shared check (macro) big eno
 
 ## `GET /api/v1/health`
 
-Returns `{ "status": "ok" }` while the server is up. Railway uses it as the backend's healthcheck.
+Returns `{ "status": "ok", "version": "0.1.0" }` while the server is up. `version` is the running release, from `backend/pyproject.toml`. Railway uses it as the backend's healthcheck.
 
 ## Errors
 

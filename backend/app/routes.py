@@ -1,5 +1,6 @@
 """The permit navigator API. Contract: docs/API_CONTRACT.md."""
 
+import tomllib
 import uuid
 from functools import cache
 
@@ -12,6 +13,7 @@ from .engine.diagrams import diagrams
 from .models.jev import OpenRouterJevClient
 from .models.llm import OpenRouterLlmClient
 from .navigator import Navigator, Session
+from .paths import get_repo_root_path
 
 router = APIRouter(prefix="/api/v1")
 
@@ -48,10 +50,17 @@ def _navigator_turn(session_id: str, session: Session, turn: dict) -> dict:
     return {"session_id": session_id, **turn}
 
 
+@cache
+def _version() -> str:
+    """The release version from backend/pyproject.toml, which release.sh bumps."""
+    with (get_repo_root_path() / "backend" / "pyproject.toml").open("rb") as f:
+        return tomllib.load(f)["project"]["version"]
+
+
 @router.get("/health")
 async def get_health():
-    """Liveness check for the deploy platform."""
-    return {"status": "ok"}
+    """Liveness check for the deploy platform, with the running release version."""
+    return {"status": "ok", "version": _version()}
 
 
 @cache

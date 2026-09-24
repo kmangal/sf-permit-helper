@@ -87,7 +87,11 @@ For a guided prompt, run `uv run --project backend cz commit` from the repo root
 
 ## Pull requests
 
-- Branch off `main` and keep each PR to one change.
+- Branch off `development` and keep each PR to one change.
 - Make sure the hooks and both test suites pass.
 - If you change the API, update `docs/API_CONTRACT.md` in the same PR.
 - If you change rules in `backend/app/engine/rules.yaml`, regenerate the diagrams in `docs/rules/` with `cd backend && uv run python -m app.engine.diagrams`.
+
+## Releases
+
+Releases are cut from `development` with `./release.sh`, which tags `vX.Y.Z` and moves the `production` branch that Railway deploys. See `docs/RELEASING.md`.
