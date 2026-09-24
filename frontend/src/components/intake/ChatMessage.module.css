@@ -9,7 +9,7 @@
   font-size: 15.5px;
   font-weight: 500;
   color: var(--navy);
-  background: #e6edf8;
+  background: var(--blue-tint);
   padding: 10px 14px;
   border-radius: 12px 12px 3px 12px;
   max-width: 480px;

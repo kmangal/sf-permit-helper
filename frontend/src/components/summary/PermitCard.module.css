@@ -11,7 +11,7 @@
 .due[data-late] { color: var(--red); }
 .fee { color: var(--ink); font-weight: 500; }
 .limits { color: var(--text-2); line-height: 1.45; }
-.verify { color: var(--amber); line-height: 1.45; }
+.verify { color: var(--brown); line-height: 1.45; }
 .sources { display: flex; flex-direction: column; gap: 2px; }
 .sources a { line-height: 1.45; }
 .actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; justify-content: center; }

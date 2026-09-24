@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 40px;
-  background: var(--navy);
+  background: var(--blue);
   color: #ffffff;
 }
 .brand { font-weight: 700; font-size: 18px; }

@@ -3,16 +3,17 @@
    design/canvas/Main.dc.html. */
 
 :root {
-  --navy: #12305e;
-  --blue: #1e4b9a;
-  --blue-tint: #eaf0f9;
-  --blue-wash: #eef2f8;
-  --gold: #c9a54a;
-  --amber: #9a6b0a;
-  --amber-tint: #fdf1d6;
+  /* San Francisco city flag: blue, gold, red, brown. */
+  --blue: #092782;
+  --navy: #061a5c;
+  --blue-tint: #e7eaf5;
+  --blue-wash: #f0f2f9;
+  --gold: #feca00;
+  --gold-tint: #fff5cc;
+  --brown: #6e291e;
+  --red: #e20010;
   --green: #1f6b3f;
   --green-tint: #e2f0e6;
-  --red: #b42318;
 
   --ink: #101828;
   --text-2: #344054;
@@ -26,7 +27,7 @@
   --surface: #ffffff;
   --ground: #f5f7fa;
   --desk: #e9ecf1;
-  --pen-ink: #16264d;
+  --pen-ink: #0b1a4a;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
