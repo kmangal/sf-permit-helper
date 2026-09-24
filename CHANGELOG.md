@@ -1,3 +1,10 @@
+## v0.2.0 (2026-09-24)
+
+### Feat
+
+- labels for clearer button names during flow
+- make UI responsive for mobile
+
 ## v0.1.1 (2026-09-24)
 
 ### Fix
