@@ -1,6 +1,7 @@
-import type { Navigator } from "../../hooks/useNavigator.ts";
+import { type Navigator, OPENING_CHAT } from "../../hooks/useNavigator.ts";
 import { Working } from "../ui/Working.tsx";
 import { ChatMessage } from "./ChatMessage.tsx";
+import chatStyles from "./ChatMessage.module.css";
 import { Choices } from "./Choices.tsx";
 import { Composer } from "./Composer.tsx";
 import { EXAMPLE, placeholderFor } from "./copy.ts";
@@ -12,7 +13,7 @@ type Props = Pick<
   "chat" | "known" | "question" | "thinking" | "clarifying" | "ended" | "fresh" | "send" | "answer" | "clarify"
 >;
 
-/** Chat intake: transcript, answer choices, composer, and the ledger beside them. */
+/** Chat intake: transcript, answer choices, composer, and — once something is sent — the ledger beside them. */
 export function IntakeScreen(nav: Props) {
   const { chat, known, question, thinking, clarifying, fresh, send, answer, clarify } = nav;
   const asking = question && !thinking;
@@ -24,7 +25,13 @@ export function IntakeScreen(nav: Props) {
         <div className={styles.transcript}>
           <div className={`${styles.column} ${styles.messages}`}>
             {chat.map((item, i) => (
-              <ChatMessage key={i} item={item} />
+              <ChatMessage key={i} item={item}>
+                {fresh && item === OPENING_CHAT.at(-1) && (
+                  <button type="button" className={chatStyles.example} onClick={() => send(EXAMPLE)}>
+                    See an example
+                  </button>
+                )}
+              </ChatMessage>
             ))}
             {thinking && <Working className={styles.thinking}>{thinking}</Working>}
             {clarifying === "waiting" && <Working className={styles.thinking}>Looking into that</Working>}
@@ -44,12 +51,12 @@ export function IntakeScreen(nav: Props) {
                 onSend={clarify}
               />
             ) : (
-              <Composer key="answer" placeholder={placeholderFor(nav)} onSend={send} example={fresh ? EXAMPLE : undefined} />
+              <Composer key="answer" placeholder={placeholderFor(nav)} onSend={send} />
             )}
           </div>
         </div>
       </section>
-      <Ledger known={known} pending={question?.fact} />
+      {!fresh && <Ledger known={known} pending={question?.fact} />}
     </div>
   );
 }

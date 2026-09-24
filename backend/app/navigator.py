@@ -6,6 +6,9 @@
     while turn["kind"] == "question":
         turn = await nav.reply(session, input(turn["prompt"]))
 
+`start` first asks jev whether the description is an event at all; if not,
+the session ends with an "off_topic" turn and no questions are asked.
+
 Each engine question becomes a jev choice question over the fact's options
 plus "unknown". jev's most probable label is taken as the answer; when that
 label is "unknown" (or jev fails), the question goes to the user. A reply is
@@ -45,6 +48,21 @@ UNKNOWN_CRITERION = (
     "of the other options with confidence."
 )
 ABORT_MESSAGE = "Sorry, we cannot help you."
+OFF_TOPIC_MESSAGE = "I'm sorry, I'm only able to help with events for now."
+IS_EVENT = Choice(
+    instructions="Does the description tell of an event that someone is planning?",
+    criteria={
+        "event": (
+            "An event or gathering someone is planning: a block party, street fair, festival, "
+            "parade, concert, market, rally, party or the like, however briefly described."
+        ),
+        "not_an_event": (
+            "Anything else: a question or request unrelated to planning an event, "
+            "a greeting, gibberish, or a project that is not an event (such as "
+            "building work, a business license or parking)."
+        ),
+    },
+)
 
 
 class Jev(Protocol):
@@ -93,6 +111,23 @@ class Navigator:
         if fact not in self._options:
             self._options[fact] = options_for(self.rules, fact)
         return self._options[fact]
+
+    async def start(self, session: Session) -> dict:
+        """Check the description is an event, then advance."""
+        if not await self._is_event(session.description):
+            session.done = True
+            return {"kind": "off_topic", "message": OFF_TOPIC_MESSAGE}
+        return await self.advance(session)
+
+    async def _is_event(self, description: str) -> bool:
+        """False only when jev says, more likely than not, that it is not an event."""
+        try:
+            probs = await self.jev.choose({"event_description": description}, "is_event", IS_EVENT)
+        except Exception as exc:  # let the rules walk go ahead rather than turn people away
+            logger.warning("jev failed on is_event (%s: %s)", type(exc).__name__, exc)
+            return True
+        logger.info("jev is_event -> %s", probs)
+        return probs.get("not_an_event", 0.0) <= probs.get("event", 0.0)
 
     async def advance(self, session: Session) -> dict:
         """Let jev answer until a question needs the user or the walk ends."""

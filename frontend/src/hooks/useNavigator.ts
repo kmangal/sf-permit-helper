@@ -13,10 +13,10 @@ export type ChatItem =
   | { kind: "actions"; actions: string[] };
 
 export const OPENING_CHAT: ChatItem[] = [
-  { kind: "agent", lead: true, text: "Tell me about the event." },
+  { kind: "agent", lead: true, text: "Find out what permits you need to host events in the city." },
   {
     kind: "agent",
-    text: "Where, when, who is organizing, how many people, and anything happening: food, music, alcohol, tents, sales. One message is fine. I will pull out what I can and ask about the rest.",
+    text: "Tell us about your event: where, when, who is organizing, how many people, and what will happen (e.g. food, music, alcohol, tents, and sales). We'll ask follow up questions in case you missed anything.",
   },
 ];
 
@@ -89,6 +89,12 @@ export function useNavigator({ onError }: { onError: (err: unknown) => void }) {
           setSessionId(null);
           setEnded(true);
           push({ kind: "agent", text: turn.message + " Start over to try again." });
+          return;
+        case "off_topic":
+          // Not an event: say so and take a fresh description.
+          setQuestion(null);
+          setSessionId(null);
+          push({ kind: "agent", text: turn.message });
           return;
         case "terminal":
           setQuestion(null);

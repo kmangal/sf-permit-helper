@@ -53,19 +53,21 @@ describe("Composer", () => {
     expect(box).toHaveValue("");
   });
 
+  it("starts a new line on Shift+Enter instead of sending", async () => {
+    const onSend = vi.fn(() => true);
+    render(<Composer placeholder="Say" onSend={onSend} />);
+    const box = screen.getByRole("textbox", { name: "Message" });
+    await userEvent.type(box, "Block party{Shift>}{Enter}{/Shift}Saturday");
+    expect(onSend).not.toHaveBeenCalled();
+    expect(box).toHaveValue("Block party\nSaturday");
+  });
+
   it("keeps the text when the send is refused", async () => {
     render(<Composer placeholder="Say" onSend={() => false} />);
     const box = screen.getByRole("textbox", { name: "Message" });
     await userEvent.type(box, "wait");
     await userEvent.click(screen.getByRole("button", { name: "Send" }));
     expect(box).toHaveValue("wait");
-  });
-
-  it("offers an example", async () => {
-    const onSend = vi.fn(() => true);
-    render(<Composer placeholder="Say" onSend={onSend} example="An example" />);
-    await userEvent.click(screen.getByRole("button", { name: "Use an example" }));
-    expect(onSend).toHaveBeenCalledWith("An example");
   });
 });
 
@@ -106,9 +108,16 @@ describe("IntakeScreen", () => {
   it("shows the opening prompt and example", async () => {
     const props = nav();
     render(<IntakeScreen {...props} />);
-    expect(screen.getByText("Tell me about the event.")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Use an example" }));
+    expect(screen.getByText("Find out what permits you need to host events in the city.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "See an example" }));
     expect(props.send).toHaveBeenCalledWith(EXAMPLE);
+  });
+
+  it("hides the ledger until the first message is sent", () => {
+    const { rerender } = render(<IntakeScreen {...nav()} />);
+    expect(screen.queryByRole("complementary", { name: "Event details" })).not.toBeInTheDocument();
+    rerender(<IntakeScreen {...nav({ fresh: false, thinking: "Reading your description" })} />);
+    expect(screen.getByRole("complementary", { name: "Event details" })).toBeInTheDocument();
   });
 
   it("routes typed text to a clarifying question while choices are up", async () => {

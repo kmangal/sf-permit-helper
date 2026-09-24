@@ -7,6 +7,7 @@ import { useToast } from "../../hooks/useToast.ts";
 import { errorMessage } from "../../lib/api.ts";
 import { toOthers, toPermits } from "../../lib/rules.ts";
 import { IntakeScreen } from "../intake/IntakeScreen.tsx";
+import { Disclaimer } from "../layout/Disclaimer.tsx";
 import { Header } from "../layout/Header.tsx";
 import { SummaryScreen } from "../summary/SummaryScreen.tsx";
 import { Toast } from "../ui/Toast.tsx";
@@ -28,9 +29,10 @@ export function PermitSession({ onStartOver }: { onStartOver: () => void }) {
         {!result ? (
           <IntakeScreen {...nav} />
         ) : (
-          <SummaryScreen result={result} facts={result.facts} known={nav.known} permits={permits} others={others} />
+          <SummaryScreen result={result} facts={result.facts} permits={permits} others={others} />
         )}
       </div>
+      <Disclaimer />
       <Toast key={toast.id} message={toast.message} />
     </div>
   );

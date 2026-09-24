@@ -8,6 +8,7 @@ from app.engine.model import load
 from app.navigator import (
     ABORT_MESSAGE,
     MAX_ATTEMPTS,
+    OFF_TOPIC_MESSAGE,
     UNKNOWN,
     Navigator,
     Session,
@@ -22,19 +23,29 @@ RS = load()
 class FakeJev:
     """Answers from `known` (fact -> value); anything else is unknown.
 
-    `replies` maps a user reply to the value jev should read it as.
+    `replies` maps a user reply to the value jev should read it as; `event`
+    is jev's verdict on whether the description is an event.
     """
 
-    def __init__(self, known: dict | None = None, replies: dict | None = None, fail=False):
+    def __init__(
+        self, known: dict | None = None, replies: dict | None = None, fail=False, event=True
+    ):
         self.known = known or {}
         self.replies = replies or {}
         self.fail = fail
+        self.event = event
         self.asked: list[str] = []
 
     async def choose(self, state, name, question):
         self.asked.append(name)
         if self.fail:
             raise TimeoutError("jev down")
+        if name == "is_event":
+            return (
+                {"event": 0.9, "not_an_event": 0.1}
+                if self.event
+                else {"event": 0.2, "not_an_event": 0.8}
+            )
         if "response" in state:
             value = self.replies.get(state["response"], UNKNOWN)
         else:
@@ -63,6 +74,26 @@ def test_jev_answers_everything(scenario):
     assert set(turn["answered_by"].values()) <= {"jev"}
     got = {r["id"] for r in turn["rules"]}
     assert set(scenario.expected_permits) <= got
+
+
+def test_start_checks_the_description_is_an_event():
+    jev = FakeJev()
+    turn = run(Navigator(jev, RS).start(Session(description="A block party with a DJ")))
+    assert jev.asked[0] == "is_event"
+    assert turn["kind"] == "question"
+
+
+def test_start_turns_away_what_is_not_an_event():
+    jev = FakeJev(event=False)
+    session = Session(description="How do I renew my driver's license?")
+    turn = run(Navigator(jev, RS).start(session))
+    assert turn == {"kind": "off_topic", "message": OFF_TOPIC_MESSAGE}
+    assert session.done and jev.asked == ["is_event"]
+
+
+def test_start_goes_ahead_when_jev_fails():
+    turn = run(Navigator(FakeJev(fail=True), RS).start(Session(description="anything")))
+    assert turn["kind"] == "question" and turn["fact"] == "event_type"
 
 
 def test_unknown_goes_to_user_then_resumes_with_jev():

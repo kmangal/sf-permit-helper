@@ -22,13 +22,13 @@ describe("App", () => {
     await user.click(await screen.findByRole("button", { name: "50 to 100" }));
 
     expect(await screen.findByRole("heading", { level: 1 }, { timeout: 2000 })).toHaveTextContent(
-      "1 permit for your event.",
+      "1 permit required for your event.",
     );
     expect(screen.getByRole("article", { name: "Street closure" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Start over" }));
-    expect(screen.getByText("Tell me about the event.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Use an example" })).toBeInTheDocument();
+    expect(screen.getByText("Find out what permits you need to host events in the city.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "See an example" })).toBeInTheDocument();
   });
 
   it("toasts a failed request", async () => {

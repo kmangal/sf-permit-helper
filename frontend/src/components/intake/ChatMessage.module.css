@@ -2,6 +2,7 @@
 .message[data-kind="user"] { align-items: flex-end; }
 
 .agent { font-size: 17px; font-weight: 400; color: var(--text-2); line-height: 1.55; max-width: 600px; white-space: pre-line; }
+.example { composes: btn btn-link from global; font: inherit; font-weight: 500; color: var(--blue); margin-left: 6px; }
 .lead { font-size: 34px; font-weight: 700; color: var(--ink); line-height: 1.15; letter-spacing: -0.7px; }
 
 .user {

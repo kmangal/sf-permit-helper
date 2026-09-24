@@ -116,4 +116,12 @@ export interface AbortedTurn {
   known?: KnownFact[];
 }
 
-export type NavigatorTurn = QuestionTurn | TerminalTurn | AbortedTurn;
+/** The description was not an event; the session is gone and a new description may be sent. */
+export interface OffTopicTurn {
+  session_id: string;
+  kind: "off_topic";
+  message: string;
+  known?: KnownFact[];
+}
+
+export type NavigatorTurn = QuestionTurn | TerminalTurn | AbortedTurn | OffTopicTurn;

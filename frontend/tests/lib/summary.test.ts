@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { fee, known, permit, rule, terminal } from "../fixtures.ts";
-import { dueLine, feeSummary, permitDue, siteCheck, summaryHead, summarySub } from "../../src/lib/summary.ts";
+import { fee, permit, rule, terminal } from "../fixtures.ts";
+import { blocker, dueLine, feeSummary, permitDue, summaryHead, summarySub } from "../../src/lib/summary.ts";
 
 const NOW = new Date(2026, 8, 1).getTime();
 
@@ -29,8 +29,8 @@ describe("permitDue / dueLine", () => {
 
 describe("summaryHead / summarySub", () => {
   it("counts permits for a complete result", () => {
-    expect(summaryHead(terminal(), [permit()])).toBe("1 permit for your event.");
-    expect(summaryHead(terminal(), [permit(), permit({ id: "b" })])).toBe("2 permits for your event.");
+    expect(summaryHead(terminal(), [permit()])).toBe("1 permit required for your event.");
+    expect(summaryHead(terminal(), [permit(), permit({ id: "b" })])).toBe("2 permits required for your event.");
     expect(summaryHead(terminal(), [])).toBe("No permits needed.");
   });
 
@@ -47,11 +47,9 @@ describe("summaryHead / summarySub", () => {
   });
 });
 
-describe("siteCheck", () => {
-  it("counts what jev read and what the user answered", () => {
-    expect(siteCheck(terminal(), known).text).toBe(
-      "Read 1 details from your description and asked you 1 more. Every result links to the city source it comes from.",
-    );
+describe("blocker", () => {
+  it("is null when nothing blocks the event", () => {
+    expect(blocker(terminal())).toBeNull();
   });
 
   it("shows the blocking rule when there is one", () => {
@@ -60,7 +58,7 @@ describe("siteCheck", () => {
       blocking_rule: "x",
       rules: [rule({ id: "x", title: "Muni line on block", notes: "Pick another street." })],
     });
-    expect(siteCheck(t, known)).toEqual({ title: "Muni line on block", text: "Pick another street.", source: "sf.gov" });
+    expect(blocker(t)).toEqual({ title: "Muni line on block", text: "Pick another street.", source: "sf.gov" });
   });
 });
 

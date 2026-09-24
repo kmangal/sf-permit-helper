@@ -8,7 +8,7 @@ The version is in the path. A breaking change to a request or response shape goe
 
 ## `POST /api/v1/navigator` and `POST /api/v1/navigator/{session_id}`
 
-Walks the rules file (`backend/app/engine/rules.yaml`) one question at a time. For each question jev picks an answer from the description, or says "unknown", and then the question goes to the user. Sessions live in memory and are dropped once they end.
+Starting a session first asks jev whether the description is an event at all. If it is not, the session ends at once with an `off_topic` turn; if jev fails, the description is taken as an event. Then it walks the rules file (`backend/app/engine/rules.yaml`) one question at a time. For each question jev picks an answer from the description, or says "unknown", and then the question goes to the user. Sessions live in memory and are dropped once they end.
 
 ```jsonc
 // start
@@ -43,6 +43,9 @@ Walks the rules file (`backend/app/engine/rules.yaml`) one question at a time. F
   "not_needed": [ { "id": "...", "kind": "permit", "title": "...", "agency": "..." } ],
   "facts": { }, "answered_by": { }, "known": [ ]
 }
+
+// start only: the description is not an event; send a new description to try again
+{ "session_id": "07a8...", "kind": "off_topic", "message": "I'm sorry, I'm only able to help with events for now." }
 
 // after three unusable answers to one question
 { "session_id": "07a8...", "kind": "aborted", "message": "Sorry, we cannot help you.", "fact": "..." }

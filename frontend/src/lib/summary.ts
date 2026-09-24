@@ -1,6 +1,6 @@
 // What the summary screen says about a terminal result. Pure, so each line is testable.
 
-import type { Facts, KnownFact, TerminalTurn } from "../types/api.ts";
+import type { Facts, TerminalTurn } from "../types/api.ts";
 import { addDays, fromISO, isPast } from "./dates.ts";
 import { fmtDate, fmtMoney, plural } from "./format.ts";
 import { blockingRule, feeTotal, type OtherItem, type Permit } from "./rules.ts";
@@ -29,7 +29,7 @@ export function summaryHead(terminal: TerminalTurn, permits: Permit[]): string {
   if (terminal.status === "out_of_scope") return "This tool does not cover that event.";
   if (terminal.status === "blocked") return "This event cannot go ahead as described.";
   if (permits.length === 0) return "No permits needed.";
-  return plural(permits.length, "permit") + " for your event.";
+  return plural(permits.length, "permit") + " required for your event.";
 }
 
 export function summarySub(terminal: TerminalTurn, permits: Permit[], others: OtherItem[]): string {
@@ -46,31 +46,20 @@ export function summarySub(terminal: TerminalTurn, permits: Permit[], others: Ot
   );
 }
 
-export interface SiteCheck {
+export interface Blocker {
   title: string;
   text: string;
   source: string;
 }
 
-export function siteCheck(terminal: TerminalTurn, known: KnownFact[]): SiteCheck {
-  const blocker = blockingRule(terminal);
-  if (blocker) {
-    return {
-      title: blocker.title,
-      text: blocker.notes || "",
-      source: blocker.sources.map((s) => s.publisher).join(", "),
-    };
-  }
-  const fromUser = known.filter((k) => k.by === "user").length;
+/** The rule that stops the event going ahead, if any. */
+export function blocker(terminal: TerminalTurn): Blocker | null {
+  const rule = blockingRule(terminal);
+  if (!rule) return null;
   return {
-    title: "Checked against the city's event permit rules",
-    text:
-      "Read " +
-      (known.length - fromUser) +
-      " details from your description" +
-      (fromUser ? " and asked you " + fromUser + " more." : ".") +
-      " Every result links to the city source it comes from.",
-    source: "",
+    title: rule.title,
+    text: rule.notes || "",
+    source: rule.sources.map((s) => s.publisher).join(", "),
   };
 }
 

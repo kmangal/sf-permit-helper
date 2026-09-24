@@ -1,0 +1,4 @@
+.card { grid-template-columns: 1fr; gap: 4px; padding: 20px 24px; margin-bottom: 14px; animation-delay: 200ms; }
+.label { font-size: 13px; color: var(--muted); }
+.fixed { font-size: 32px; font-weight: 700; letter-spacing: -0.6px; }
+.note { font-size: 13px; color: var(--muted); line-height: 1.4; }

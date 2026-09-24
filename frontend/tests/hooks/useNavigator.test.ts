@@ -127,6 +127,21 @@ describe("useNavigator", () => {
     });
   });
 
+  it("turns away what is not an event and takes a new description", async () => {
+    const message = "I'm sorry, I'm only able to help with events for now.";
+    start.mockResolvedValueOnce({ session_id: "s1", kind: "off_topic", message });
+    const { result } = setup();
+    act(() => void result.current.send("Renew my license"));
+    await waitFor(() => expect(result.current.chat.at(-1)).toEqual({ kind: "agent", text: message }));
+    expect(result.current.ended).toBe(false);
+    expect(result.current.canSend).toBe(true);
+
+    start.mockResolvedValueOnce(question());
+    act(() => void result.current.send("Block party"));
+    await waitFor(() => expect(result.current.question).not.toBeNull());
+    expect(start).toHaveBeenLastCalledWith("Block party");
+  });
+
   it("reports request failures", async () => {
     start.mockRejectedValue(new Error("Down"));
     const { result, onError } = setup();

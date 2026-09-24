@@ -1,4 +1,4 @@
-/* The two-column card shared by the site check and each permit. Applied
+/* The two-column card shared by the fee and blocker cards and each permit. Applied
    alongside each card's own class in TSX: cross-file `composes` makes Vite warn. */
 .card {
   composes: a-rise from global;

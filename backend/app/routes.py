@@ -47,11 +47,12 @@ def _navigator_turn(session_id: str, session: Session, turn: dict) -> dict:
 
 @router.post("/navigator")
 async def post_navigator_start(req: NavigatorStart):
-    """Start from a description; jev answers what it can, the rest comes back as a question."""
+    """Start from a description; jev checks it is an event, answers what it can, and the rest
+    comes back as a question."""
     session_id = uuid.uuid4().hex
     session = Session(description=req.description)
     SESSIONS[session_id] = session
-    return _navigator_turn(session_id, session, await navigator().advance(session))
+    return _navigator_turn(session_id, session, await navigator().start(session))
 
 
 @router.post("/navigator/{session_id}")

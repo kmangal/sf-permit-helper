@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import styles from "./Composer.module.css";
 
 interface Props {
@@ -8,32 +8,44 @@ interface Props {
   submitLabel?: string;
   /** Returns false when the message was not taken; the text then stays put. */
   onSend: (text: string) => boolean;
-  /** Offer a canned description, sent as soon as it is picked. */
-  example?: string;
 }
 
-export function Composer({ placeholder, label = "Message", submitLabel = "Send", onSend, example }: Props) {
+export function Composer({ placeholder, label = "Message", submitLabel = "Send", onSend }: Props) {
   const [text, setText] = useState("");
+  const box = useRef<HTMLTextAreaElement>(null);
+
+  // Grow with the text so a whole paragraph stays visible; CSS caps the height.
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [text]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (onSend(text)) setText("");
   };
 
+  // Enter sends; Shift+Enter starts a new line.
+  const keyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
+    e.preventDefault();
+    e.currentTarget.form?.requestSubmit();
+  };
+
   return (
     <form className={styles.composer} onSubmit={submit}>
-      <input
+      <textarea
+        ref={box}
         className={styles.input}
+        rows={1}
         value={text}
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={keyDown}
         placeholder={placeholder}
         aria-label={label}
       />
-      {example && (
-        <button type="button" className={styles.example} onClick={() => onSend(example) && setText("")}>
-          Use an example
-        </button>
-      )}
       <button type="submit" className={styles.send} aria-label={submitLabel}>
         <svg
           width="18"

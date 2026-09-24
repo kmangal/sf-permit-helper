@@ -2,11 +2,12 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { toPermits } from "../../../src/lib/rules.ts";
-import { known, permit, terminal } from "../../fixtures.ts";
+import { permit, terminal } from "../../fixtures.ts";
 import { NotNeededList } from "../../../src/components/summary/NotNeededList.tsx";
 import { OtherList } from "../../../src/components/summary/OtherList.tsx";
 import { PermitCard } from "../../../src/components/summary/PermitCard.tsx";
-import { SiteCheckCard } from "../../../src/components/summary/SiteCheckCard.tsx";
+import { BlockerCard } from "../../../src/components/summary/BlockerCard.tsx";
+import { FeeCard } from "../../../src/components/summary/FeeCard.tsx";
 import { SummaryScreen } from "../../../src/components/summary/SummaryScreen.tsx";
 
 describe("PermitCard", () => {
@@ -30,11 +31,18 @@ describe("PermitCard", () => {
   });
 });
 
-describe("SiteCheckCard", () => {
-  it("shows the check and fees", () => {
-    render(<SiteCheckCard check={{ title: "Checked", text: "All good", source: "" }} fees={{ fixed: "$122", note: "Known" }} />);
+describe("FeeCard", () => {
+  it("shows the estimated fee total", () => {
+    render(<FeeCard fees={{ fixed: "$122", note: "Known" }} />);
+    expect(screen.getByText("Estimated fees for this event")).toBeInTheDocument();
     expect(screen.getByText("$122")).toBeInTheDocument();
-    expect(screen.getByText("All good")).toBeInTheDocument();
+  });
+});
+
+describe("BlockerCard", () => {
+  it("shows why the event is blocked", () => {
+    render(<BlockerCard blocker={{ title: "Muni line on block", text: "Pick another street.", source: "sf.gov" }} />);
+    expect(screen.getByText("Pick another street.")).toBeInTheDocument();
   });
 });
 
@@ -68,12 +76,11 @@ describe("SummaryScreen", () => {
       <SummaryScreen
         result={result}
         facts={result.facts}
-        known={known}
         permits={permits}
         others={[]}
       />,
     );
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("1 permit for your event.");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("1 permit required for your event.");
     expect(screen.getByText("Bocana St block party")).toBeInTheDocument();
     expect(screen.queryByText("Alcohol license")).not.toBeInTheDocument();
 

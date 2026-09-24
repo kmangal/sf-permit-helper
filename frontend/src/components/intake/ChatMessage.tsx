@@ -1,13 +1,18 @@
+import type { ReactNode } from "react";
 import type { ChatItem } from "../../hooks/useNavigator.ts";
 import { Check } from "../ui/Check.tsx";
 import { Staggered } from "../ui/Staggered.tsx";
 import styles from "./ChatMessage.module.css";
 
-export function ChatMessage({ item }: { item: ChatItem }) {
+/** `children` trail an agent message's text, e.g. an inline action. */
+export function ChatMessage({ item, children }: { item: ChatItem; children?: ReactNode }) {
   return (
     <div className={styles.message} data-kind={item.kind}>
       {item.kind === "agent" && (
-        <div className={item.lead ? `${styles.agent} ${styles.lead}` : styles.agent}>{item.text}</div>
+        <div className={item.lead ? `${styles.agent} ${styles.lead}` : styles.agent}>
+          {item.text}
+          {children}
+        </div>
       )}
       {item.kind === "user" && <div className={styles.user}>{item.text}</div>}
       {item.kind === "actions" && (
