@@ -3,13 +3,14 @@
 import uuid
 
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from .models.jev import OpenRouterJevClient
+from .models.llm import OpenRouterLlmClient
 from .navigator import Navigator, Session
 
-router = APIRouter(prefix="/api")
+router = APIRouter(prefix="/api/v1")
 
 # Open navigator sessions, dropped once they reach a terminal or abort.
 SESSIONS: dict[str, Session] = {}
@@ -21,6 +22,10 @@ class NavigatorStart(BaseModel):
 
 class NavigatorAnswer(BaseModel):
     answer: str
+
+
+class NavigatorClarify(BaseModel):
+    question: str
 
 
 def error(status: int, code: str, message: str, missing: list[str] | None = None) -> JSONResponse:
@@ -55,3 +60,13 @@ async def post_navigator_answer(session_id: str, req: NavigatorAnswer):
     if session is None:
         return error(404, "unknown_session", f"No open navigator session {session_id!r}.")
     return _navigator_turn(session_id, session, await navigator().reply(session, req.answer))
+
+
+@router.post("/navigator/{session_id}/clarify")
+async def post_navigator_clarify(session_id: str, req: NavigatorClarify):
+    """Stream an answer, as plain text, to a question about the pending question."""
+    session = SESSIONS.get(session_id)
+    if session is None or session.pending is None:
+        return error(404, "unknown_session", f"No open navigator session {session_id!r}.")
+    stream = navigator().clarify(OpenRouterLlmClient(), session, req.question)
+    return StreamingResponse(stream, media_type="text/plain; charset=utf-8")

@@ -2,9 +2,11 @@
 
 What the frontend calls. Every determination carries a citation; the LLM never decides whether a permit applies.
 
-Base path `/api`. JSON in, JSON out. No auth for now.
+Base path `/api/v1`. JSON in, JSON out. No auth for now.
 
-## `POST /api/navigator` and `POST /api/navigator/{session_id}`
+The version is in the path. A breaking change to a request or response shape goes under a new version (`/api/v2`), with the old one kept until the frontend has moved over. Adding an optional field is not breaking.
+
+## `POST /api/v1/navigator` and `POST /api/v1/navigator/{session_id}`
 
 Walks the rules file (`backend/app/engine/rules.yaml`) one question at a time. For each question jev picks an answer from the description, or says "unknown", and then the question goes to the user. Sessions live in memory and are dropped once they end.
 
@@ -47,6 +49,16 @@ Walks the rules file (`backend/app/engine/rules.yaml`) one question at a time. F
 ```
 
 `rules` holds only what applies, in application order (`requires` first). `fee` and `lead_time` are the rules file's own shapes. `not_needed` lists the permits and licenses that were ruled out. An unknown or finished session returns 404 `unknown_session`.
+
+## `POST /api/v1/navigator/{session_id}/clarify`
+
+Ask about the pending question instead of answering it. An LLM, briefed as an SF permitting expert, gets the description, what is settled, the pending question and its choices, the rules the question bears on, and earlier clarifications in the session. It explains and may suggest a choice, but records nothing: the question stays pending until the user taps an answer.
+
+```jsonc
+{ "question": "Does the band count toward attendance?" }
+```
+
+The response is `text/plain; charset=utf-8`, streamed as it is written. It can be empty if the model fails. An unknown or finished session, or one with no pending question, returns 404 `unknown_session`.
 
 ## Errors
 

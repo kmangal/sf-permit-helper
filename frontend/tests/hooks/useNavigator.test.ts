@@ -2,16 +2,18 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as api from "../../src/lib/api.ts";
 import { question, terminal } from "../fixtures.ts";
-import { OPENING_CHAT, useNavigator } from "../../src/hooks/useNavigator.ts";
+import { NO_CLARIFICATION, OPENING_CHAT, useNavigator } from "../../src/hooks/useNavigator.ts";
 
 vi.mock("../../src/lib/api.ts", async (orig) => ({
   ...(await orig<typeof import("../../src/lib/api.ts")>()),
   navigatorStart: vi.fn(),
   navigatorReply: vi.fn(),
+  navigatorClarify: vi.fn(),
 }));
 
 const start = vi.mocked(api.navigatorStart);
 const reply = vi.mocked(api.navigatorReply);
+const clarify = vi.mocked(api.navigatorClarify);
 
 function setup() {
   const onError = vi.fn();
@@ -23,6 +25,7 @@ describe("useNavigator", () => {
   beforeEach(() => {
     start.mockReset();
     reply.mockReset();
+    clarify.mockReset();
   });
 
   it("opens with the prompt and takes a description", async () => {
@@ -60,6 +63,46 @@ describe("useNavigator", () => {
 
     await waitFor(() => expect(result.current.result?.status).toBe("complete"));
     expect(result.current.canSend).toBe(false);
+  });
+
+  it("streams a clarification into the chat and keeps the question open", async () => {
+    start.mockResolvedValue(question({ known: [] }));
+    let finish = () => {};
+    clarify.mockImplementation(async (_id, _q, onText) => {
+      onText("Count everyone ");
+      onText("at the peak.");
+      await new Promise<void>((resolve) => (finish = resolve));
+    });
+    const { result } = setup();
+    act(() => void result.current.send("Block party"));
+    await waitFor(() => expect(result.current.question).not.toBeNull());
+
+    act(() => {
+      expect(result.current.clarify(" Do kids count? ")).toBe(true);
+    });
+    expect(clarify).toHaveBeenCalledWith("s1", "Do kids count?", expect.any(Function));
+    await waitFor(() => expect(result.current.clarifying).toBe("streaming"));
+    expect(result.current.chat.slice(-2)).toEqual([
+      { kind: "user", text: "Do kids count?" },
+      { kind: "agent", text: "Count everyone at the peak." },
+    ]);
+    act(() => expect(result.current.clarify("again")).toBe(false));
+
+    await act(async () => finish());
+    expect(result.current.clarifying).toBeNull();
+    expect(result.current.question?.fact).toBe("attendance");
+    expect(reply).not.toHaveBeenCalled();
+  });
+
+  it("says so when a clarification comes back empty", async () => {
+    start.mockResolvedValue(question({ known: [] }));
+    clarify.mockResolvedValue();
+    const { result } = setup();
+    act(() => void result.current.send("Block party"));
+    await waitFor(() => expect(result.current.question).not.toBeNull());
+    act(() => void result.current.clarify("Huh?"));
+    await waitFor(() => expect(result.current.clarifying).toBeNull());
+    expect(result.current.chat.at(-1)).toEqual({ kind: "agent", text: NO_CLARIFICATION });
   });
 
   it("refuses to send while thinking or when empty", () => {

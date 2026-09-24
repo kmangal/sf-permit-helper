@@ -10,7 +10,7 @@ layers =
     app.main
     app.routes
     app.navigator | app.models
-    app.engine | app.environment
+    app.engine | app.environment | app.prompts
 
 [importlinter:contract:engine-layers]
 name = Engine layers: diagrams and engine above model above logic

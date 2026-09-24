@@ -171,3 +171,51 @@ def test_turns_carry_known_facts_and_citations():
         assert all(s["url"].startswith("http") for s in r["sources"])
     applying = {r["id"] for r in turn["rules"]}
     assert turn["not_needed"] and not applying & {r["id"] for r in turn["not_needed"]}
+
+
+class FakeLlm:
+    """Streams `reply` in two pieces and keeps what it was asked."""
+
+    def __init__(self, reply: str = "It means the most people there at once."):
+        self.reply = reply
+        self.prompts: list[tuple[str, str | None]] = []
+
+    async def stream(self, prompt, *, system=None):
+        self.prompts.append((prompt, system))
+        half = len(self.reply) // 2
+        for part in (self.reply[:half], self.reply[half:]):
+            yield part
+
+
+async def collect(stream) -> str:
+    return "".join([text async for text in stream])
+
+
+def test_clarify_streams_an_answer_about_the_pending_question():
+    nav = Navigator(FakeJev(), RS)
+    session = Session(description="A block party with a DJ")
+    turn = run(nav.advance(session))
+    llm = FakeLlm()
+
+    answer = run(collect(nav.clarify(llm, session, "Does that count kids?")))
+
+    assert answer == llm.reply
+    prompt, system = llm.prompts[0]
+    assert "A block party with a DJ" in prompt
+    assert turn["prompt"] in prompt
+    assert "Does that count kids?" in prompt
+    assert system and "San Francisco" in system
+    # The question is still waiting, nothing was settled, and the exchange is remembered.
+    assert session.pending is not None and session.pending["fact"] == turn["fact"]
+    assert session.facts == {}
+    assert session.clarifications == [
+        {"about": turn["prompt"], "question": "Does that count kids?", "answer": llm.reply}
+    ]
+
+    run(collect(nav.clarify(llm, session, "And the band?")))
+    assert "Does that count kids?" in llm.prompts[1][0]
+
+
+def test_clarify_needs_a_pending_question():
+    with pytest.raises(ValueError):
+        run(collect(Navigator(FakeJev(), RS).clarify(FakeLlm(), Session("x"), "what?")))

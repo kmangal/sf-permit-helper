@@ -6,10 +6,9 @@ export const EXAMPLE =
 const OPENING_PLACEHOLDER =
   "Block party on the 400 block of Bocana St, Oct 24, noon to 6, about 80 people, a band, a taco stand";
 
+export const CLARIFY_PLACEHOLDER = "Not sure? Ask a clarifying question";
+
 export function placeholderFor(nav: Pick<Navigator, "question" | "ended">): string {
-  if (nav.question) {
-    const numeric = nav.question.type === "int" || nav.question.type === "number";
-    return numeric ? "Type a number, or pick a range" : "Type your answer";
-  }
+  if (nav.question) return nav.question.options.length ? CLARIFY_PLACEHOLDER : "Type your answer";
   return nav.ended ? "Start over to try again" : OPENING_PLACEHOLDER;
 }

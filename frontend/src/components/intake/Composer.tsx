@@ -3,13 +3,16 @@ import styles from "./Composer.module.css";
 
 interface Props {
   placeholder: string;
+  /** What the input and its button are called for screen readers. */
+  label?: string;
+  submitLabel?: string;
   /** Returns false when the message was not taken; the text then stays put. */
   onSend: (text: string) => boolean;
   /** Offer a canned description, sent as soon as it is picked. */
   example?: string;
 }
 
-export function Composer({ placeholder, onSend, example }: Props) {
+export function Composer({ placeholder, label = "Message", submitLabel = "Send", onSend, example }: Props) {
   const [text, setText] = useState("");
 
   const submit = (e: FormEvent) => {
@@ -24,14 +27,14 @@ export function Composer({ placeholder, onSend, example }: Props) {
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={placeholder}
-        aria-label="Message"
+        aria-label={label}
       />
       {example && (
         <button type="button" className={styles.example} onClick={() => onSend(example) && setText("")}>
           Use an example
         </button>
       )}
-      <button type="submit" className={styles.send} aria-label="Send">
+      <button type="submit" className={styles.send} aria-label={submitLabel}>
         <svg
           width="18"
           height="18"

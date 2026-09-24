@@ -56,4 +56,5 @@ Commit messages must be Conventional Commits (`feat:`, `fix:`, `chore:` …); a 
 
 Full contract in `docs/API_CONTRACT.md`.
 
-- `POST /api/navigator`, `/api/navigator/{session_id}` — conversational navigator: jev answers from the description, the rules engine picks questions. The frontend chat runs on this
+- `POST /api/v1/navigator`, `/api/v1/navigator/{session_id}` — conversational navigator: jev answers from the description, the rules engine picks questions. The frontend chat runs on this
+- `POST /api/v1/navigator/{session_id}/clarify` — streams an LLM's plain-text answer to a question about the pending question

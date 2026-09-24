@@ -4,9 +4,9 @@ import { describe, expect, it, vi } from "vitest";
 import { OPENING_CHAT, type Navigator } from "../../../src/hooks/useNavigator.ts";
 import { known, question } from "../../fixtures.ts";
 import { ChatMessage } from "../../../src/components/intake/ChatMessage.tsx";
-import { Chips } from "../../../src/components/intake/Chips.tsx";
+import { Choices } from "../../../src/components/intake/Choices.tsx";
 import { Composer } from "../../../src/components/intake/Composer.tsx";
-import { EXAMPLE, placeholderFor } from "../../../src/components/intake/copy.ts";
+import { CLARIFY_PLACEHOLDER, EXAMPLE, placeholderFor } from "../../../src/components/intake/copy.ts";
 import { IntakeScreen } from "../../../src/components/intake/IntakeScreen.tsx";
 import { Ledger } from "../../../src/components/intake/Ledger.tsx";
 
@@ -21,16 +21,24 @@ describe("ChatMessage", () => {
   });
 });
 
-describe("Chips", () => {
+describe("Choices", () => {
   it("sends the raw label and shows it humanized", async () => {
     const onPick = vi.fn();
-    render(<Chips options={question().options} onPick={onPick} />);
+    render(<Choices prompt="How many people?" options={question().options} onPick={onPick} />);
+    expect(screen.getByRole("group", { name: "How many people?" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "50 to 100" }));
     expect(onPick).toHaveBeenCalledWith("50_to_100", "50 to 100");
   });
 
+  it("can be disabled", async () => {
+    const onPick = vi.fn();
+    render(<Choices prompt="?" options={question().options} onPick={onPick} disabled />);
+    await userEvent.click(screen.getByRole("button", { name: "50 to 100" }));
+    expect(onPick).not.toHaveBeenCalled();
+  });
+
   it("renders nothing without options", () => {
-    const { container } = render(<Chips options={[]} onPick={vi.fn()} />);
+    const { container } = render(<Choices prompt="?" options={[]} onPick={vi.fn()} />);
     expect(container).toBeEmptyDOMElement();
   });
 });
@@ -72,8 +80,8 @@ describe("Ledger", () => {
 
 describe("placeholderFor", () => {
   it("fits the question type", () => {
-    expect(placeholderFor({ question: question(), ended: false })).toBe("Type a number, or pick a range");
-    expect(placeholderFor({ question: question({ type: "bool" }), ended: false })).toBe("Type your answer");
+    expect(placeholderFor({ question: question(), ended: false })).toBe(CLARIFY_PLACEHOLDER);
+    expect(placeholderFor({ question: question({ options: [] }), ended: false })).toBe("Type your answer");
     expect(placeholderFor({ question: null, ended: true })).toBe("Start over to try again");
   });
 });
@@ -85,10 +93,12 @@ describe("IntakeScreen", () => {
       known: [],
       question: null,
       thinking: null,
+      clarifying: null,
       ended: false,
       fresh: true,
       send: vi.fn(() => true),
       answer: vi.fn(),
+      clarify: vi.fn(() => true),
       ...overrides,
     };
   }
@@ -101,7 +111,21 @@ describe("IntakeScreen", () => {
     expect(props.send).toHaveBeenCalledWith(EXAMPLE);
   });
 
-  it("shows chips for a question, and hides them while thinking", () => {
+  it("routes typed text to a clarifying question while choices are up", async () => {
+    const props = nav({ question: question(), fresh: false });
+    render(<IntakeScreen {...props} />);
+    await userEvent.type(screen.getByRole("textbox", { name: "Clarifying question" }), "Do kids count?{Enter}");
+    expect(props.clarify).toHaveBeenCalledWith("Do kids count?");
+    expect(props.send).not.toHaveBeenCalled();
+  });
+
+  it("disables the choices while a clarification is in flight", () => {
+    render(<IntakeScreen {...nav({ question: question(), fresh: false, clarifying: "waiting" })} />);
+    expect(screen.getByRole("button", { name: "Under 50" })).toBeDisabled();
+    expect(screen.getByRole("status")).toHaveTextContent("Looking into that");
+  });
+
+  it("shows choices for a question, and hides them while thinking", () => {
     const { rerender } = render(<IntakeScreen {...nav({ question: question(), fresh: false })} />);
     expect(screen.getByRole("button", { name: "Under 50" })).toBeInTheDocument();
     rerender(<IntakeScreen {...nav({ question: question(), thinking: "Checking the rules" })} />);

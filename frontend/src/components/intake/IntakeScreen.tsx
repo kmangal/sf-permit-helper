@@ -1,17 +1,23 @@
 import type { Navigator } from "../../hooks/useNavigator.ts";
 import { Working } from "../ui/Working.tsx";
 import { ChatMessage } from "./ChatMessage.tsx";
-import { Chips } from "./Chips.tsx";
+import { Choices } from "./Choices.tsx";
 import { Composer } from "./Composer.tsx";
 import { EXAMPLE, placeholderFor } from "./copy.ts";
 import styles from "./IntakeScreen.module.css";
 import { Ledger } from "./Ledger.tsx";
 
-type Props = Pick<Navigator, "chat" | "known" | "question" | "thinking" | "ended" | "fresh" | "send" | "answer">;
+type Props = Pick<
+  Navigator,
+  "chat" | "known" | "question" | "thinking" | "clarifying" | "ended" | "fresh" | "send" | "answer" | "clarify"
+>;
 
-/** Chat intake: transcript, suggestion chips, composer, and the ledger beside them. */
+/** Chat intake: transcript, answer choices, composer, and the ledger beside them. */
 export function IntakeScreen(nav: Props) {
-  const { chat, known, question, thinking, fresh, send, answer } = nav;
+  const { chat, known, question, thinking, clarifying, fresh, send, answer, clarify } = nav;
+  const asking = question && !thinking;
+  // With choices on screen the composer asks about the question; without, it answers it.
+  const clarifies = asking && question.options.length > 0;
   return (
     <div className={styles.screen}>
       <section className={styles.main} aria-label="Intake">
@@ -21,12 +27,25 @@ export function IntakeScreen(nav: Props) {
               <ChatMessage key={i} item={item} />
             ))}
             {thinking && <Working className={styles.thinking}>{thinking}</Working>}
+            {clarifying === "waiting" && <Working className={styles.thinking}>Looking into that</Working>}
           </div>
         </div>
         <div className={styles.footer}>
           <div className={styles.column}>
-            {question && !thinking && <Chips options={question.options} onPick={answer} />}
-            <Composer placeholder={placeholderFor(nav)} onSend={send} example={fresh ? EXAMPLE : undefined} />
+            {asking && (
+              <Choices prompt={question.prompt} options={question.options} onPick={answer} disabled={!!clarifying} />
+            )}
+            {clarifies ? (
+              <Composer
+                key="clarify"
+                placeholder={placeholderFor(nav)}
+                label="Clarifying question"
+                submitLabel="Ask"
+                onSend={clarify}
+              />
+            ) : (
+              <Composer key="answer" placeholder={placeholderFor(nav)} onSend={send} example={fresh ? EXAMPLE : undefined} />
+            )}
           </div>
         </div>
       </section>

@@ -13,11 +13,17 @@ accepted if it is an option label, parses as the fact's type, or jev can map
 it to an option;
 after MAX_ATTEMPTS unusable replies the session is aborted.
 
+While a question waits, the user may ask about it instead of answering.
+`clarify` streams an LLM's reply from the session so far and the rules
+behind the question; the question stays pending and no fact changes.
+
 Numeric facts are offered to jev as ranges cut at the thresholds the rules
 compare against, so every value in a range decides the rules the same way.
 """
 
+import json
 import logging
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Literal, Protocol
@@ -28,6 +34,7 @@ from .engine import engine as _engine
 from .engine import load_ruleset
 from .engine.logic import Atom, compare, tests_in
 from .engine.model import Fact, RuleSet
+from .prompts import PromptName, load
 
 logger = logging.getLogger("permit-api")
 
@@ -43,6 +50,12 @@ ABORT_MESSAGE = "Sorry, we cannot help you."
 class Jev(Protocol):
     async def choose(self, state: JSONContent, name: str, question: Choice) -> dict[str, float]:
         """Probability of each label of `question`."""
+        ...
+
+
+class Llm(Protocol):
+    def stream(self, prompt: str, *, system: str | None = None) -> AsyncIterator[str]:
+        """The response text as it arrives."""
         ...
 
 
@@ -64,6 +77,8 @@ class Session:
     # The engine question waiting on the user, and how many replies it has rejected.
     pending: dict | None = None
     attempts: int = 0
+    # Clarifying questions about pending questions, as {"about", "question", "answer"}.
+    clarifications: list[dict] = field(default_factory=list)
     done: bool = False
 
 
@@ -120,6 +135,42 @@ class Navigator:
         session.pending = None
         self._set(session, fact, picked.value, "user", picked.label)
         return await self.advance(session)
+
+    async def clarify(self, llm: Llm, session: Session, question: str) -> AsyncIterator[str]:
+        """Stream an answer to the user's question about the pending question."""
+        if session.done or session.pending is None:
+            raise ValueError("no question is waiting for an answer")
+        step = session.pending
+        prompt = load(PromptName.CLARIFY)
+        context = json.dumps(self._clarify_context(session, step), indent=2, default=str)
+        user = prompt.render(context=context, question=question)
+        parts: list[str] = []
+        async for text in llm.stream(user, system=prompt.system):
+            parts.append(text)
+            yield text
+        session.clarifications.append(
+            {"about": step["prompt"], "question": question, "answer": "".join(parts)}
+        )
+
+    def _clarify_context(self, session: Session, step: dict) -> dict:
+        by_id = {r.id: r for r in self.rules.rules}
+        rules = [by_id[i] for i in step["because"] if i in by_id]
+        return {
+            "event_description": session.description,
+            "settled": [
+                {"question": k["prompt"], "answer": k["label"], "by": k["by"]}
+                for k in self._known(session)
+            ],
+            "pending_question": {
+                "question": step["prompt"],
+                "choices": [o.label for o in self.options(step["fact"])],
+            },
+            "bears_on": [
+                {"title": r.title, "agency": r.agency, "notes": r.notes, "limits": r.limits}
+                for r in rules
+            ],
+            "earlier_clarifications": session.clarifications,
+        }
 
     async def _pick(self, fact: str, state: JSONContent, instructions: str) -> Option | None:
         """jev's most probable option, or None for unknown or failure."""

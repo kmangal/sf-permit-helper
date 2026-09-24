@@ -1,3 +1,5 @@
+from collections.abc import AsyncIterator
+
 from openrouter import OpenRouter
 
 from ..environment import get_environment
@@ -10,16 +12,21 @@ class OpenRouterLlmClient:
         )
         self.model = model
 
+    @staticmethod
+    def _messages(prompt: str, system: str | None) -> list:
+        messages: list = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+        return messages
+
     async def complete(
         self,
         prompt: str,
         *,
         system: str | None = None,
     ) -> str:
-        messages: list = []
-        if system:
-            messages.append({"role": "system", "content": system})
-        messages.append({"role": "user", "content": prompt})
+        messages = self._messages(prompt, system)
 
         response = await self.client.chat.send_async(
             model=self.model,
@@ -31,6 +38,25 @@ class OpenRouterLlmClient:
             return content
         # Content can also arrive as a list of parts; keep only the text ones.
         return "".join(getattr(part, "text", "") for part in content or [])
+
+    async def stream(
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+    ) -> AsyncIterator[str]:
+        """The response text as it arrives, one delta at a time."""
+        events = await self.client.chat.send_async(
+            model=self.model,
+            messages=self._messages(prompt, system),
+            max_tokens=5000,
+            stream=True,
+        )
+        async with events:
+            async for chunk in events:
+                for choice in chunk.choices:
+                    if isinstance(choice.delta.content, str) and choice.delta.content:
+                        yield choice.delta.content
 
 
 async def test() -> None:
