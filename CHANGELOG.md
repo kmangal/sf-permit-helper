@@ -1,3 +1,9 @@
+## v0.1.1 (2026-09-24)
+
+### Fix
+
+- update copy for rules link
+
 ## v0.1.0 (2026-09-24)
 
 ### Feat
