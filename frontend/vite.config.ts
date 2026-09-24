@@ -8,6 +8,12 @@ export default defineConfig({
       "/api": "http://localhost:8000",
     },
   },
+  // Production serves the build with `vite preview` (see start.sh); it reuses
+  // server.proxy. Railway's public domains and its healthcheck host
+  // (healthcheck.railway.app) are both under .railway.app.
+  preview: {
+    allowedHosts: [".railway.app"],
+  },
   test: {
     environment: "jsdom",
     globals: true,

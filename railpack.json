@@ -34,7 +34,7 @@
         { "step": "install" },
         {
           "local": true,
-          "include": [".permit-helper-root", "backend", "frontend"],
+          "include": [".permit-helper-root", "start.sh", "backend", "frontend"],
           "exclude": ["backend/.venv", "backend/.env", "frontend/node_modules", "frontend/dist"]
         }
       ],
@@ -42,13 +42,25 @@
     }
   },
   "deploy": {
-    "startCommand": "cd backend && exec .venv/bin/uvicorn app.main:app --host '' --port ${PORT:-8000}",
+    "startCommand": "./start.sh",
     "inputs": [
       {
         "step": "packages:mise",
         "include": ["/mise/shims", "/mise/installs", "/usr/local/bin/mise", "/etc/mise/config.toml", "/root/.local/state/mise"]
       },
-      { "step": "build", "include": [".permit-helper-root", "backend", "frontend/dist"], "exclude": ["backend/.env", "backend/tests"] }
+      {
+        "step": "build",
+        "include": [
+          ".permit-helper-root",
+          "start.sh",
+          "backend",
+          "frontend/dist",
+          "frontend/node_modules",
+          "frontend/package.json",
+          "frontend/vite.config.ts"
+        ],
+        "exclude": ["backend/.env", "backend/tests"]
+      }
     ],
     "variables": {
       "PYTHONUNBUFFERED": "1",
