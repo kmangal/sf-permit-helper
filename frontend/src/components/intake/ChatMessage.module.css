@@ -2,7 +2,7 @@
 .message[data-kind="user"] { align-items: flex-end; }
 
 .agent { font-size: 17px; font-weight: 400; color: var(--text-2); line-height: 1.55; max-width: 600px; white-space: pre-line; }
-.example { composes: btn btn-link from global; font: inherit; font-weight: 500; color: var(--blue); margin-left: 6px; }
+.example { composes: btn btn-link from global; font: inherit; font-weight: 500; color: var(--blue); }
 .lead { font-size: 34px; font-weight: 700; color: var(--ink); line-height: 1.15; letter-spacing: -0.7px; }
 
 .user {
@@ -37,4 +37,21 @@
   justify-content: center;
   flex-shrink: 0;
   animation-delay: inherit;
+}
+
+/* Phones: agent messages become bubbles on the left, facing the user's on the right. */
+@media (max-width: 760px) {
+  .agent {
+    font-size: 15.5px;
+    line-height: 1.45;
+    max-width: 85%;
+    padding: 10px 14px;
+    background: var(--surface);
+    border-radius: 12px 12px 12px 3px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .06);
+  }
+  .lead { font-size: 24px; letter-spacing: -0.4px; max-width: none; padding: 4px 2px; background: transparent; box-shadow: none; }
+  .user { max-width: 85%; }
+  .actions { padding-left: 4px; }
+  .action { font-size: 13.5px; }
 }

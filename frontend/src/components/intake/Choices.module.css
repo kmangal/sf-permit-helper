@@ -20,3 +20,15 @@
 }
 .choice:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-tint); }
 .choice:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* Phones: tighter buttons, and a long list scrolls rather than pushing the transcript off screen. */
+@media (max-width: 760px) {
+  .choices {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin-bottom: 8px;
+    max-height: 40dvh;
+    overflow-y: auto;
+  }
+  .choice { min-height: 44px; padding: 8px 12px; font-size: 15px; border-radius: 12px; }
+}

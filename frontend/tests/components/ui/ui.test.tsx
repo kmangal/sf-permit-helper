@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 import { Header } from "../../../src/components/layout/Header.tsx";
@@ -52,5 +53,25 @@ describe("Header", () => {
     );
     expect(screen.getByRole("link", { name: "Find your permits" })).toHaveAttribute("href", "/");
     expect(screen.queryByRole("button", { name: "Start over" })).not.toBeInTheDocument();
+  });
+
+  it("opens the phone menu, and closes it on a pick or Escape", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <Header />
+      </MemoryRouter>,
+    );
+    const menu = screen.getByRole("button", { name: "Menu" });
+    expect(menu).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(menu);
+    expect(menu).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByRole("button", { name: "Start over" }));
+    expect(menu).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(menu);
+    await user.keyboard("{Escape}");
+    expect(menu).toHaveAttribute("aria-expanded", "false");
   });
 });

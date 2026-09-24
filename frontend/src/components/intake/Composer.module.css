@@ -34,3 +34,11 @@
   flex-shrink: 0;
   margin-bottom: 2px;
 }
+
+/* Phones: a flat pill inside the bottom bar. 16px text keeps iOS from zooming on focus. */
+@media (max-width: 760px) {
+  .composer { padding: 4px 4px 4px 16px; border-radius: 22px; background: var(--ground); box-shadow: none; }
+  .composer:focus-within { box-shadow: 0 0 0 1.5px var(--blue); }
+  .input { font-size: 16px; line-height: 22px; padding: 9px 0; max-height: 120px; }
+  .send { width: 38px; height: 38px; border-radius: 50%; margin-bottom: 0; }
+}

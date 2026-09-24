@@ -16,3 +16,8 @@
 .row[data-pending] .label { color: var(--blue); }
 .value { composes: a-ink from global; margin: 0; font-size: 14px; color: var(--ink); text-align: right; font-weight: 500; line-height: 1.35; }
 .dots { padding: 6px 0; }
+
+/* No room beside the chat on a phone; the action log in the transcript already says what was read. */
+@media (max-width: 760px) {
+  .ledger { display: none; }
+}

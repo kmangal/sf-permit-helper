@@ -29,10 +29,14 @@ export function IntakeScreen(nav: Props) {
           <div ref={content} className={`${styles.column} ${styles.messages}`}>
             {chat.map((item, i) => (
               <ChatMessage key={i} item={item}>
+                {/* A space, not a margin, so a wrapped button starts flush with the line. */}
                 {fresh && item === OPENING_CHAT.at(-1) && (
-                  <button type="button" className={chatStyles.example} onClick={() => send(EXAMPLE)}>
-                    See an example
-                  </button>
+                  <>
+                    {" "}
+                    <button type="button" className={chatStyles.example} onClick={() => send(EXAMPLE)}>
+                      See an example
+                    </button>
+                  </>
                 )}
               </ChatMessage>
             ))}

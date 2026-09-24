@@ -5,3 +5,11 @@
 .messages { display: flex; flex-direction: column; gap: 26px; }
 .thinking { font-size: 14.5px; }
 .footer { padding: 8px 0 36px; }
+
+/* Phones: a messaging layout. The transcript scrolls; the choices and composer sit in a bar at the bottom. */
+@media (max-width: 760px) {
+  .transcript { padding: 20px 0 16px; }
+  .column { padding: 0 12px; }
+  .messages { gap: 12px; }
+  .footer { padding: 8px 0; background: var(--surface); border-top: 1px solid var(--border); }
+}
