@@ -63,6 +63,10 @@ Ask about the pending question instead of answering it. An LLM, briefed as an SF
 
 The response is `text/plain; charset=utf-8`, streamed as it is written. It can be empty if the model fails. An unknown or finished session, or one with no pending question, returns 404 `unknown_session`.
 
+## `GET /api/v1/health`
+
+Returns `{ "status": "ok" }` while the server is up. Railway uses it as the backend's healthcheck.
+
 ## Errors
 
 ```jsonc

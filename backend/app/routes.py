@@ -45,6 +45,12 @@ def _navigator_turn(session_id: str, session: Session, turn: dict) -> dict:
     return {"session_id": session_id, **turn}
 
 
+@router.get("/health")
+async def get_health():
+    """Liveness check for the deploy platform."""
+    return {"status": "ok"}
+
+
 @router.post("/navigator")
 async def post_navigator_start(req: NavigatorStart):
     """Start from a description; jev checks it is an event, answers what it can, and the rest

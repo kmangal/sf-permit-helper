@@ -1,0 +1,49 @@
+# Railpack serves the Vite build with this file in place of its default Caddyfile
+# (https://railpack.com/languages/node). It adds the /api proxy that vite.config.ts
+# provides in dev, so the browser only ever talks to this origin.
+{
+	admin off
+	persist_config off
+	auto_https off
+
+	log {
+		format json
+	}
+
+	servers {
+		trusted_proxies static private_ranges 100.0.0.0/8 # trust railway's proxy
+	}
+}
+
+:{$PORT:80} {
+	log {
+		format json
+	}
+
+	header {
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	handle /health {
+		respond 200
+	}
+
+	# BACKEND_URL is the backend's private address, e.g. http://backend.railway.internal:8000
+	handle /api/* {
+		reverse_proxy {$BACKEND_URL} {
+			# /clarify streams its answer; pass chunks through as they arrive
+			flush_interval -1
+		}
+	}
+
+	handle {
+		root * {{.DIST_DIR}}
+		encode gzip zstd
+		try_files {path} {path}.html {path}/index.html /index.html
+		file_server {
+			hide .git
+			hide .env*
+		}
+	}
+}
