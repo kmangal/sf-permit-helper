@@ -2,11 +2,11 @@
 
 import pytest
 
-from app.prompts import TEMPLATES, PromptName, load
+from app.prompts import TEMPLATES_DIR, PromptName, load
 
 
 def test_every_template_file_has_an_enum_member():
-    assert {p.stem for p in TEMPLATES.glob("*.json")} == {n.value for n in PromptName}
+    assert {p.stem for p in TEMPLATES_DIR.glob("*.json")} == {n.value for n in PromptName}
 
 
 @pytest.mark.parametrize("name", list(PromptName))

@@ -12,15 +12,12 @@ member.
 
 import json
 from dataclasses import dataclass
-from enum import StrEnum
 from functools import cache
 from pathlib import Path
 
-TEMPLATES = Path(__file__).parent / "templates"
+from .catalog import PromptName
 
-
-class PromptName(StrEnum):
-    CLARIFY = "clarify"
+TEMPLATES_DIR = Path(__file__).parent / "templates"
 
 
 @dataclass(frozen=True)
@@ -34,7 +31,7 @@ class Prompt:
 
 
 def path(name: PromptName) -> Path:
-    return TEMPLATES / f"{name}.json"
+    return TEMPLATES_DIR / f"{name}.json"
 
 
 @cache
