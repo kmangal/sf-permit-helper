@@ -10,6 +10,11 @@ import { OtherList } from "./OtherList.tsx";
 import { PermitCard } from "./PermitCard.tsx";
 import styles from "./SummaryScreen.module.css";
 
+/** Umami pixel: each load counts one view of a finished summary. */
+const UMAMI_PIXEL = "https://cloud.umami.is/p/AVevDYcYJ";
+/** Only the production site counts, as with the tracker's data-domains in index.html. */
+const PRODUCTION_HOST = "sf-permit-helper.up.railway.app";
+
 interface Props {
   result: TerminalTurn;
   facts: Facts;
@@ -51,6 +56,9 @@ export function SummaryScreen({ result, facts, permits, others }: Props) {
         </Staggered>
 
         {showNotNeeded && <NotNeededList items={notNeeded} />}
+        {window.location.hostname === PRODUCTION_HOST && (
+          <img className={styles.pixel} src={UMAMI_PIXEL} alt="" width={1} height={1} />
+        )}
       </div>
     </main>
   );

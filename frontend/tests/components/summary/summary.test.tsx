@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { toPermits } from "../../../src/lib/rules.ts";
 import { permit, terminal } from "../../fixtures.ts";
 import { NotNeededList } from "../../../src/components/summary/NotNeededList.tsx";
@@ -66,6 +66,21 @@ describe("OtherList / NotNeededList", () => {
     expect(screen.getByRole("link", { name: "sf.gov" })).toHaveAttribute("href", "https://x");
     expect(screen.getByText("Alcohol license")).toBeInTheDocument();
   });
+
+  it("loads the Umami pixel on the production host only", () => {
+    const result = terminal();
+    const summary = <SummaryScreen result={result} facts={result.facts} permits={toPermits(result)} others={[]} />;
+    const { container, rerender } = render(summary);
+    expect(container.querySelector("img")).toBeNull();
+
+    vi.spyOn(window, "location", "get").mockReturnValue({
+      ...window.location,
+      hostname: "sf-permit-helper.up.railway.app",
+    });
+    rerender(<div>{summary}</div>);
+    expect(container.querySelector("img")).toHaveAttribute("src", "https://cloud.umami.is/p/AVevDYcYJ");
+    vi.restoreAllMocks();
+  });
 });
 
 describe("SummaryScreen", () => {
@@ -88,5 +103,20 @@ describe("SummaryScreen", () => {
     await userEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText("Alcohol license")).toBeInTheDocument();
+  });
+
+  it("loads the Umami pixel on the production host only", () => {
+    const result = terminal();
+    const summary = <SummaryScreen result={result} facts={result.facts} permits={toPermits(result)} others={[]} />;
+    const { container, rerender } = render(summary);
+    expect(container.querySelector("img")).toBeNull();
+
+    vi.spyOn(window, "location", "get").mockReturnValue({
+      ...window.location,
+      hostname: "sf-permit-helper.up.railway.app",
+    });
+    rerender(<div>{summary}</div>);
+    expect(container.querySelector("img")).toHaveAttribute("src", "https://cloud.umami.is/p/AVevDYcYJ");
+    vi.restoreAllMocks();
   });
 });

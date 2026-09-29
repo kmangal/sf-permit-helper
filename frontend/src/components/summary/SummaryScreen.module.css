@@ -11,6 +11,7 @@
   padding: 22px 0 0;
   animation-delay: calc(400ms + var(--i) * 110ms);
 }
+.pixel { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .toggle { composes: btn btn-link from global; font-size: 14px; color: var(--muted); }
 
 @media (max-width: 760px) {
