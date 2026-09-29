@@ -1,3 +1,14 @@
+## v0.3.0 (2026-09-29)
+
+### Feat
+
+- add Umami pixel to permit summary
+- add contact page with Formspree form
+
+### Fix
+
+- make analysis summary UI responsive to mobile
+
 ## v0.2.0 (2026-09-24)
 
 ### Feat
