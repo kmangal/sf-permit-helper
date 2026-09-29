@@ -13,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@formspree/react": "^3.0.0",
     "mermaid": "^12.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

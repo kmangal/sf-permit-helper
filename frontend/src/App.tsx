@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
+import { ContactPage } from "./components/contact/ContactPage.tsx";
 import { NotFound } from "./components/layout/NotFound.tsx";
 import { Shell } from "./components/layout/Shell.tsx";
 import { RulesPage } from "./components/rules/RulesPage.tsx";
@@ -12,6 +13,7 @@ export default function App() {
         <Route element={<Shell />}>
           <Route index element={<Helper />} />
           <Route path="rules/:diagramId?" element={<RulesPage />} />
+          <Route path="contact" element={<ContactPage />} />
         </Route>
         {/* Bare: no header or small print. */}
         <Route path="*" element={<NotFound />} />

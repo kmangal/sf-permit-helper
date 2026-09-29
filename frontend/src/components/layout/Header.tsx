@@ -9,6 +9,11 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const bar = useRef<HTMLElement>(null);
   const close = () => setOpen(false);
+  const contact = (
+    <Link className={styles.link} to="/contact" onClick={close}>
+      Contact
+    </Link>
+  );
 
   // Escape, or a tap anywhere outside the bar, closes the menu.
   useEffect(() => {
@@ -64,6 +69,7 @@ export function Header() {
               <Link className={styles.link} to="/rules" onClick={close}>
                 How it works
               </Link>
+              {contact}
               <button
                 type="button"
                 className={styles.reset}
@@ -76,9 +82,12 @@ export function Header() {
               </button>
             </>
           ) : (
-            <Link className={styles.link} to="/" onClick={close}>
-              Find your permits
-            </Link>
+            <>
+              <Link className={styles.link} to="/" onClick={close}>
+                Find your permits
+              </Link>
+              {contact}
+            </>
           )}
         </nav>
       </header>

@@ -30,6 +30,7 @@ src/
     intake/             IntakeScreen, ChatMessage, Choices, Composer, Ledger
     summary/            SummaryScreen, SiteCheckCard, PermitCard, OtherList, NotNeededList
     rules/              RulesPage, RulesScreen: the rule engine's flowcharts at /rules/:diagramId?
+    contact/            ContactPage: a feedback form at /contact, posted to Formspree
     layout/             Shell (header + page + small print, around every route but 404), Header, NotFound
     ui/                 Check, Dots, Working, Toast, Staggered
   App.tsx               the route table (React Router); each visit to / remounts PermitSession

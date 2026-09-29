@@ -1,0 +1,44 @@
+.screen { composes: scroll from global; flex: 1; }
+.page { max-width: 640px; margin: 0 auto; padding: 56px 48px 72px; }
+.head { composes: a-rise from global; margin: 0 0 12px; font-size: 36px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
+.sub { composes: a-rise from global; margin: 0 0 12px; font-size: 16px; line-height: 1.5; color: var(--text-3); animation-delay: 60ms; }
+.done { composes: a-fade from global; margin: 0; padding: 16px 20px; border-radius: 12px; background: var(--green-tint); color: var(--green); font-weight: 500; line-height: 1.5; }
+
+.form {
+  composes: a-rise from global;
+  animation-delay: 120ms;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid var(--border-card);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.field { display: flex; flex-direction: column; gap: 6px; }
+.label { font-size: 14px; font-weight: 600; color: var(--text-2); }
+.optional { font-weight: 400; color: var(--muted); }
+.input, .textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--surface);
+  transition: border-color .15s, box-shadow .15s;
+}
+.textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
+.input:focus, .textarea:focus { outline: 0; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-tint); }
+.error { font-size: 13px; color: var(--red); }
+.send { composes: btn btn-primary from global; align-self: flex-start; padding: 12px 20px; border-radius: 10px; font-size: 15px; font-weight: 600; }
+
+@media (max-width: 760px) {
+  .page { padding: 32px 16px 48px; }
+  .head { font-size: 28px; }
+  .form { margin-top: 12px; padding: 16px; }
+
+  .send { align-self: stretch; }
+}
