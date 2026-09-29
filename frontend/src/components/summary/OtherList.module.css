@@ -9,3 +9,9 @@
 .text { font-size: 14px; color: var(--text-2); line-height: 1.5; }
 .meta { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
 .kind { color: var(--faint); }
+
+@media (max-width: 760px) {
+  .row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .heading { flex-direction: column; gap: 2px; }
+  .meta a { overflow-wrap: anywhere; }
+}

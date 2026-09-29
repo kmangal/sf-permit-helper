@@ -2,3 +2,7 @@
 .title { font-size: 16px; font-weight: 600; }
 .text { font-size: 15px; color: var(--text-2); line-height: 1.5; }
 .source { font-size: 13px; color: var(--faint); margin-top: 2px; }
+
+@media (max-width: 760px) {
+  .card { padding: 16px; }
+}

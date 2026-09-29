@@ -9,3 +9,7 @@
   border-radius: 12px;
   background: var(--surface);
 }
+
+@media (max-width: 760px) {
+  .card { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+}

@@ -10,3 +10,8 @@
 }
 .name { font-size: 14px; color: var(--text-3); }
 .agency { font-size: 13px; color: var(--faint); text-align: right; max-width: 200px; line-height: 1.4; }
+
+@media (max-width: 760px) {
+  .list { grid-template-columns: minmax(0, 1fr); }
+  .agency { max-width: 45%; }
+}

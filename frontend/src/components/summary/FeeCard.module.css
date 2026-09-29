@@ -1,3 +1,8 @@
 .card { grid-template-columns: 1fr auto; align-items: center; gap: 16px; padding: 16px 24px; margin-bottom: 14px; animation-delay: 200ms; }
 .label { font-size: 15px; color: var(--muted); }
 .fixed { font-size: 32px; font-weight: 700; letter-spacing: -0.6px; }
+
+@media (max-width: 760px) {
+  .card { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 16px; }
+  .fixed { font-size: 28px; }
+}
